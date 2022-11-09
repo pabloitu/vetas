@@ -42,7 +42,7 @@ def est_mc(magnitudes: (numpy.ndarray, str), mc_min: float = 2.0, mc_max: float 
     )
 
 
-def mc():
+def main():
     parser = argparse.ArgumentParser(argument_default=argparse.SUPPRESS)
     parser.add_argument('magnitudes', help='file containing magnitudes')
     parser.add_argument('-min', '--mc_min', help='min search mc', type=float)
@@ -59,4 +59,4 @@ def mc():
 
 
 if __name__ == '__main__':
-    mc()
+    main()

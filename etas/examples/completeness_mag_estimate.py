@@ -3,7 +3,7 @@ from etas.mc_b_est import round_half_up, estimate_mc
 
 if __name__ == '__main__':
     '''
-    From command line
+    From command line, this example can be run as:
         etas-mc artifacts/magnitudes.npy -min 2 -max 5.5 -d 0.1 -p 0.05 -n 1000 
     '''
     magnitude_sample = np.load("artifacts/magnitudes.npy")
