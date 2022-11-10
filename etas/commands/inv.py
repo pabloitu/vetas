@@ -9,8 +9,8 @@ from etas.inversion import ETASParameterCalculation
 set_up_logger(level=logging.DEBUG)
 
 
-def invert_etas(fileinput):
-    with open(fileinput, 'r') as f:
+def invert_etas(config):
+    with open(config, 'r') as f:
         inversion_config = json.load(f)
     calculation = ETASParameterCalculation(inversion_config)
     calculation.prepare()

@@ -3,12 +3,18 @@ import logging
 from pprint import pprint
 from etas import set_up_logger
 from etas.inversion import ETASParameterCalculation
+
 set_up_logger(level=logging.DEBUG)
 
 '''
-Inverts ETAS parameters with varying magnitude of completeness
-        Config file for this example is in 'artifacts/invert_etas_mc_var_config.json'
-        The configuration attributes are identical to the example inver_etas.py.
+    Inverts ETAS parameters with varying magnitude of completeness
+    
+    Config file for this example is in 'artifacts/invert_etas_mc_var_config.json'
+    From the command line, this example can also be run as:
+    
+        etas-inv artifacts/invert_etas_mc_var_config.json
+    
+    The config file attributes are identical to the example invert_etas.py.
 
     WHEN RUNNING ETAS INVERSION WITH VARYING MC:
         "mc" needs to be set to "var" in the config data file in
