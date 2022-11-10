@@ -63,7 +63,7 @@ def main():
     calculation.prepare()
     parameters = calculation.invert()
     calculation.store_results(inversion_config['data_path'])
-    pprint('Final parameters\n', parameters)
+    pprint(parameters)
 
 
 if __name__ == '__main__':
