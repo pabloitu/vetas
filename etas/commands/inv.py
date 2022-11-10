@@ -9,22 +9,20 @@ from etas.inversion import ETASParameterCalculation
 set_up_logger(level=logging.DEBUG)
 
 
-def invert_etas(fileinput, mc_min=0.1):
+def invert_etas(fileinput):
     with open(fileinput, 'r') as f:
         inversion_config = json.load(f)
     calculation = ETASParameterCalculation(inversion_config)
     calculation.prepare()
-    parameters = calculation.invert()
-    print(calculation, parameters)
-    # calculation.store_results(inversion_config['data_path'])
+    calculation.invert()
+    calculation.store_results(inversion_config['data_path'])
 
 
 def main():
     parser = argparse.ArgumentParser(argument_default=argparse.SUPPRESS)
-    parser.add_argument('fileinput', help='file containing magnitudes')
-    # parser.add_argument('fileoutput', help='file containing magnitudes')
-    parser.add_argument('-min', '--mc_min', help='min search mc', type=float)
-
+    parser.add_argument('config', help='Configuration file of the inversion')
+    # todo: add verbose and other extra options
+    # todo: do we want to modify config parameters here from the cmd?
     args = parser.parse_args()
     invert_etas(**vars(args))
 
