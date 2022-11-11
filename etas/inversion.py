@@ -578,7 +578,7 @@ class ETASParameterCalculation:
 
         # Instantiate config
         if isinstance(metadata, str):
-            self._path = os.path.dirname(metadata)
+            self._path = os.path.abspath(os.path.dirname(metadata))
             init_type = 'Configuration File'
             with open(metadata, 'r') as f:
                 metadata = json.load(f)
@@ -598,7 +598,8 @@ class ETASParameterCalculation:
         self.catalog = metadata.get('catalog', None)
         self.shape_coords = os.path.join(self._path,
                                          metadata.get('shape_coords', None))
-        self.data_path = metadata.get('data_path', '')
+        self.data_path = os.path.join(self._path,
+                                      metadata.get('data_path', ''))
 
         # Set config hyperparameters
         self.delta_m = metadata['delta_m']
@@ -655,64 +656,21 @@ class ETASParameterCalculation:
         self.shape_coords = read_shape_coords(self.shape_coords)
 
     @classmethod
-    def load_calculation(cls, metadata: dict):
-        obj = cls.__new__(cls)
+    def load_calculation(cls, metadata: (dict, str)):
+
+        if isinstance(metadata, dict):
+            obj = cls(metadata, **metadata)
+        elif isinstance(metadata, str):
+            with open(metadata, 'r') as f:
+                metadata = json.load(f)
+            obj = cls(metadata, **metadata)
+        else:
+            raise TypeError('Input calculation data not supported')
 
         obj.logger = logging.getLogger(__name__)
-        obj.name = metadata['name']
-        obj.id = metadata['id']
-
-        obj.logger.info('Loading Calculation...')
-        obj.logger.info(
-            '  model is named {}, has ID {}'.format(obj.name, obj.id))
-
-        obj.shape_coords = read_shape_coords(
-            metadata['shape_coords'])
-
-        obj.fn_catalog = metadata['fn_catalog']
-
-        obj.delta_m = metadata['delta_m']
-        obj.mc = metadata['mc']
-        obj.m_ref = metadata['m_ref']
-        obj.coppersmith_multiplier = metadata['coppersmith_multiplier']
-        obj.earth_radius = metadata['earth_radius']
-        obj.bw_sq = metadata['bw_sq']
-
-        obj.auxiliary_start = pd.to_datetime(metadata['auxiliary_start'])
-        obj.timewindow_start = pd.to_datetime(metadata['timewindow_start'])
-        obj.timewindow_end = pd.to_datetime(metadata['timewindow_end'])
-        obj.timewindow_length = metadata['timewindow_length']
-        obj.calculation_date = metadata['calculation_date']
-
-        obj.free_background = metadata['free_background']
-        obj.free_productivity = metadata['free_productivity']
-
-        obj.logger.info('  Time Window: \n      {} (aux start)\n      {} '
-                        '(start)\n      {} (end).'
-                        .format(obj.auxiliary_start,
-                                obj.timewindow_start,
-                                obj.timewindow_end))
-
-        obj.logger.info('  free_productivity: {}, free_background: {}'
-                        .format(obj.free_productivity,
-                                obj.free_background))
 
         obj.preparation_done = True
         obj.inversion_done = True
-
-        obj.catalog = pd.read_csv(
-            obj.fn_catalog,
-            index_col=0,
-            parse_dates=['time'],
-            dtype={'url': str, 'alert': str})
-
-        obj.area = metadata['area']
-        obj.beta = metadata['beta']
-        obj.theta_0 = metadata['initial_values']
-        obj.theta = metadata['final_parameters']
-
-        obj.n_hat = metadata['n_hat']
-        obj.i = metadata['n_iterations']
 
         obj.catalog = obj.filter_catalog(obj.catalog)
         obj.source_events = pd.read_csv(metadata['fn_src'], index_col=0)
@@ -971,7 +929,7 @@ class ETASParameterCalculation:
                       store_distances=False):
 
         if data_path:  # If given, replaces data_path from initial config
-            self.data_path = data_path
+            self.data_path = os.path.join(os.getcwd(), data_path)
         os.makedirs(self.data_path, exist_ok=True)
         self.logger.info(f'  Data will be stored in {self.data_path}')
 
