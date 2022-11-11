@@ -8,7 +8,7 @@
 # Leila Mizrahi, Shyam Nandan, Stefan Wiemer;
 # The Effect of Declustering on the Size Distribution of Mainshocks.
 # Seismological Research Letters 2021; doi: https://doi.org/10.1785/0220200231
-##############################################################################
+##############################################################################output_data
 
 import datetime as dt
 import json
@@ -512,17 +512,17 @@ def calc_diff_to_before(a, b):
 
 
 class ETASParameterCalculation:
-    def __init__(self, metadata: dict):
+    def __init__(self, metadata: (dict, str), **kwargs):
         '''
         Class to invert ETAS parameters.
 
 
         Parameters
         ----------
-        metadata : dict
-            A dict with stored metadata.
+        metadata : dict, str
+            A dict with stored metadata or filepath of a config file
 
-            Necessary attributes are:
+            Necessary dict/json attributes are:
 
             - fn_catalog: Path to the catalog. Catalog is expected to be a csv
                     file with the following columns:
@@ -575,16 +575,32 @@ class ETASParameterCalculation:
         '''
 
         self.logger = logging.getLogger(__name__)
+
+        # Instantiate config
+        if isinstance(metadata, str):
+            self._path = os.path.dirname(metadata)
+            init_type = 'Configuration File'
+            with open(metadata, 'r') as f:
+                metadata = json.load(f)
+        # An explicit dictionary is given
+        else:
+            self._path = os.getcwd()
+            init_type = 'dict'
         self.name = metadata.get('name', 'NoName ETAS Model')
         self.id = metadata.get('id', uuid.uuid4())
-        self.logger.info('INITIALIZING...')
+        self.logger.info(f'Initializing from {init_type}...')
         self.logger.info(
             '  model is named {}, has ID {}'.format(self.name, self.id))
-        self.shape_coords = read_shape_coords(
-            metadata.get('shape_coords', None))
-        self.fn_catalog = metadata.get('fn_catalog', None)
-        self.catalog = metadata.get('catalog', None)
 
+        # Set paths
+        self.fn_catalog = os.path.join(self._path,
+                                       metadata.get('fn_catalog', None))
+        self.catalog = metadata.get('catalog', None)
+        self.shape_coords = os.path.join(self._path,
+                                         metadata.get('shape_coords', None))
+        self.data_path = metadata.get('data_path', '')
+
+        # Set config hyperparameters
         self.delta_m = metadata['delta_m']
         self.mc = metadata['mc']
         self.m_ref = metadata['m_ref'] if self.mc == 'var' else self.mc
@@ -592,35 +608,27 @@ class ETASParameterCalculation:
         self.earth_radius = metadata.get('earth_radius', 6.3781e3)
         self.bw_sq = metadata.get('bw_sq', 1)
 
+        self.free_background = metadata.get('free_background', False)
+        self.free_productivity = metadata.get('free_productivity', False)
+        self.logger.info('  free_productivity: {}, free_background: {}'
+                         .format(self.free_productivity,
+                                 self.free_background))
+
+        # Set time frames
         self.auxiliary_start = pd.to_datetime(metadata['auxiliary_start'])
         self.timewindow_start = pd.to_datetime(metadata['timewindow_start'])
         self.timewindow_end = pd.to_datetime(metadata['timewindow_end'])
         self.timewindow_length = to_days(
             self.timewindow_end - self.timewindow_start)
         self.calculation_date = dt.datetime.now()
-
-        self.free_background = metadata.get('free_background', False)
-        self.free_productivity = metadata.get('free_productivity', False)
-
         self.logger.info('  Time Window: \n      {} (aux start)\n      {} '
                          '(start)\n      {} (end).'
                          .format(self.auxiliary_start,
                                  self.timewindow_start,
                                  self.timewindow_end))
 
-        self.logger.info('  free_productivity: {}, free_background: {}'
-                         .format(self.free_productivity,
-                                 self.free_background))
-
         self.preparation_done = False
         self.inversion_done = False
-
-        if not isinstance(self.catalog, pd.DataFrame):
-            self.catalog = pd.read_csv(
-                self.fn_catalog,
-                index_col=0,
-                parse_dates=['time'],
-                dtype={'url': str, 'alert': str})
 
         self.distances = None
         self.source_events = None
@@ -634,6 +642,17 @@ class ETASParameterCalculation:
         self.pij = None
         self.n_hat = None
         self.i = metadata.get('n_iterations')
+
+        self.__dict__.update(**kwargs)
+
+        # Parse input files
+        if not isinstance(self.catalog, pd.DataFrame):
+            self.catalog = pd.read_csv(
+                self.fn_catalog,
+                index_col=0,
+                parse_dates=['time'],
+                dtype={'url': str, 'alert': str})
+        self.shape_coords = read_shape_coords(self.shape_coords)
 
     @classmethod
     def load_calculation(cls, metadata: dict):
@@ -948,27 +967,28 @@ class ETASParameterCalculation:
 
         return np.array(new_theta)
 
-    def store_results(self, data_path='', store_pij=False,
+    def store_results(self, data_path=None, store_pij=False,
                       store_distances=False):
 
-        if data_path == '':
-            data_path = os.getcwd() + '/'
+        if data_path:  # If given, replaces data_path from initial config
+            self.data_path = data_path
+        os.makedirs(self.data_path, exist_ok=True)
+        self.logger.info(f'  Data will be stored in {self.data_path}')
 
-        self.logger.info(f'  Data will be stored in {data_path}')
+        fn_parameters = os.path.join(self.data_path,
+                                     f'parameters_{self.id}.json')
+        fn_ip = os.path.join(self.data_path,
+                             f'trig_and_bg_probs_{self.id}.csv')
+        fn_src = os.path.join(self.data_path, f'sources_{self.id}.csv')
+        fn_dist = os.path.join(self.data_path, f'distances_{self.id}.csv')
+        fn_pij = os.path.join(self.data_path, f'pij_{self.id}.csv')
 
-        fn_parameters = os.path.join(data_path, f'parameters_{self.id}.json')
-        fn_ip = os.path.join(data_path, f'trig_and_bg_probs_{self.id}.csv')
-        fn_src = os.path.join(data_path, f'sources_{self.id}.csv')
-        fn_dist = os.path.join(data_path, f'distances_{self.id}.csv')
-        fn_pij = os.path.join(data_path, f'pij_{self.id}.csv')
-
-        os.makedirs(os.path.dirname(fn_ip), exist_ok=True)
-        os.makedirs(os.path.dirname(fn_src), exist_ok=True)
         self.target_events.to_csv(fn_ip)
         self.source_events.to_csv(fn_src)
 
         if self.fn_catalog is None:
-            self.fn_catalog = data_path + 'catalog_{}.csv'.format(self.id)
+            self.fn_catalog = os.path.join(self.data_path,
+                                           'catalog_{}.csv'.format(self.id))
             self.catalog.to_csv(self.fn_catalog)
 
         all_info = {
@@ -1012,17 +1032,15 @@ class ETASParameterCalculation:
         }
 
         if store_pij:
-            os.makedirs(os.path.dirname(fn_pij), exist_ok=True)
             self.pij.to_csv(fn_pij)
             all_info['fn_pij'] = fn_pij
 
         if store_distances:
-            os.makedirs(os.path.dirname(fn_dist), exist_ok=True)
             self.distances.to_csv(fn_dist)
             all_info['fn_dist'] = fn_dist
 
         with open(fn_parameters, 'w') as f:
-            f.write(json.dumps(all_info))
+            f.write(json.dumps(all_info, indent=2))
 
     def calculate_distances(self):
         '''

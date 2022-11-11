@@ -16,7 +16,6 @@ Doc pending
 '''
 
 if __name__ == '__main__':
-    numpy.random.seed(777)
     with open("artifacts/simulate_catalog_config.json", 'r') as f:
         simulation_config = json.load(f)
 
