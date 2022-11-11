@@ -39,7 +39,6 @@ if __name__ == '__main__':
     # load output from inversion
     with open(fn_inversion_output, 'r') as f:
         inversion_output = json.load(f)
-    print(inversion_output)
     etas_inversion_reload = ETASParameterCalculation.load_calculation(
         inversion_output)
 
