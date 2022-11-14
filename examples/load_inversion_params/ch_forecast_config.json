@@ -1,6 +1,6 @@
 {
   "fn_catalog": "ch_catalog.csv",
-  "data_path": "output",
+  "data_path": "output_data",
   "auxiliary_start": "1992-01-01 00:00:00",
   "timewindow_start": "1997-01-01 00:00:00",
   "timewindow_end": "2022-01-01 00:00:00",
@@ -24,6 +24,6 @@
   "shape_coords": "ch_rect.npy",
   "id": "ch",
   "forecast_duration": 30,
-  "fn_store_simulation": "/output/simulations_ch.csv",
+  "fn_store_simulation": "/output_data/simulations_ch.csv",
   "n_simulations": 100
 }

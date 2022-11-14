@@ -11,7 +11,7 @@ set_up_logger(level=logging.DEBUG)
     Config file for this example is in 'artifacts/invert_etas_config.json'
     From the command line, this example can also be run as:
     
-        etas-inv artifacts/invert_etas_config.json
+        etas-inv config_etas_inv.json
 
     The configuration attributes are:
         fn_catalog: filename of the catalog (absolute path or filename in
@@ -55,9 +55,9 @@ set_up_logger(level=logging.DEBUG)
 
 
 def main():
-    config_file = os.path.join(os.path.dirname(__file__),
-                               'artifacts/invert_etas_config.json')
-    calculation = ETASParameterCalculation(config_file)
+    config_filename = os.path.join(os.path.dirname(__file__),
+                                   'config_etas_inv.json')
+    calculation = ETASParameterCalculation(config_filename)
     calculation.prepare()
     parameters = calculation.invert()
     calculation.store_results()
