@@ -6,15 +6,16 @@ from etas.mc_b_est import round_half_up, estimate_mc
     
     From command line, this example can be run as:
     
-        etas-mc artifacts/magnitudes.npy -min 2 -max 5.5 -d 0.1 -p 0.05 -n 1000 
+        etas-mc magnitudes.npy -min 2 -max 5.5 -d 0.1 -p 0.05 -n 1000 
         
     Parameters:
         magnitude_sample (array/str): array of magnitudes
-        mcs: values of mc you want to test. make sure they are rounded correctly,
-        because 3.19999999 will produce weird results.
+        mcs: values of mc you want to test. make sure they are rounded
+            correctly, because 3.19999999 will produce weird results.
         delta_m: magnitude bin size
         p_pass: p_value above which the catalog is accepted to be complete
-        stop_when_passed: if True, remaining mc values will not be tested anymore
+        stop_when_passed: if True, remaining mc values will not be tested 
+            anymore
         verbose: if True, stuff will be printed while the code is running
         n_samples: number of samples that are simulated to obtain the p-value
 
@@ -28,8 +29,7 @@ from etas.mc_b_est import round_half_up, estimate_mc
 
 
 def main():
-
-    magnitude_sample = np.load("artifacts/magnitudes.npy")
+    magnitude_sample = np.load("magnitudes.npy")
     mcs = round_half_up(np.arange(2.0, 5.5, 0.1), 1)
     mcs_tested, ks_distances, p_values, mc_winner, beta_winner = estimate_mc(
         magnitude_sample,

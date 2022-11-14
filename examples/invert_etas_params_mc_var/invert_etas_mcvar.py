@@ -12,13 +12,13 @@ set_up_logger(level=logging.DEBUG)
     Config file for this example is in 'artifacts/invert_etas_mc_var_config.json'
     From the command line, this example can also be run as:
     
-        etas-inv artifacts/invert_etas_mc_var_config.json
+        etas-inv invert_etas_mc_var_config.json
     
     The config file attributes are identical to the example invert_etas.py.
 
     WHEN RUNNING ETAS INVERSION WITH VARYING MC:
         "mc" needs to be set to "var" in the config data file in
-        'artifacts/invert_etas_mc_var_config.json', whereas the input catalog pointed in
+        'invert_etas_mc_var_config.json', whereas the input catalog pointed in
         "fn_catalog" needs to have an "mc_current" column (example
         described below). Also, a reference magnitude "m_ref" needs to be
         provided. This could be, although not required, the minimum mc_current.
@@ -41,7 +41,7 @@ set_up_logger(level=logging.DEBUG)
 
 
 def main():
-    with open("artifacts/invert_etas_mc_var_config.json", 'r') as f:
+    with open("invert_etas_mc_var_config.json", 'r') as f:
         inversion_config = json.load(f)
 
     calculation = ETASParameterCalculation(inversion_config)

@@ -16,16 +16,19 @@ Doc pending
 '''
 
 if __name__ == '__main__':
-    numpy.random.seed(777)
-    with open("artifacts/simulate_catalog_config.json", 'r') as f:
+    # Note that input file paths in the configuration file are relative to
+    # the config file directory.
+    with open("config_simulation.json", 'r') as f:
         simulation_config = json.load(f)
+    region_fn = os.path.join(os.path.dirname(__file__),
+                             simulation_config["shape_coords"])
+    region = Polygon(numpy.load(region_fn))
 
-    region = Polygon(numpy.load(simulation_config["shape_coords"]))
     synthetic = generate_catalog(
         polygon=region,
         timewindow_start=pandas.to_datetime(simulation_config["burn_start"]),
         timewindow_end=pandas.to_datetime(simulation_config["end"]),
-        parameters=simulation_config["parameters"],
+        parameters=simulation_config["theta"],
         mc=simulation_config["mc"],
         beta_main=simulation_config["beta"],
         delta_m=simulation_config["delta_m"]
@@ -35,7 +38,8 @@ if __name__ == '__main__':
     synthetic.index.name = 'id'
     print("store catalog..")
     primary_start = simulation_config['primary_start']
-    fn_store = simulation_config['fn_store']
+    fn_store = os.path.join(os.path.dirname(__file__),
+                            simulation_config['fn_store'])
     os.makedirs(os.path.dirname(fn_store), exist_ok=True)
     synthetic[["latitude", "longitude", "time", "magnitude"]].query(
         "time>=@primary_start").to_csv(fn_store)

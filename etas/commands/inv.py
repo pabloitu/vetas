@@ -1,28 +1,40 @@
 import argparse
-import numpy
-import json
 import logging
 from etas import set_up_logger
-
 from etas.inversion import ETASParameterCalculation
 
 set_up_logger(level=logging.DEBUG)
 
 
-def invert_etas(config):
-    with open(config, 'r') as f:
-        inversion_config = json.load(f)
-    calculation = ETASParameterCalculation(inversion_config)
+def invert_etas(config, **kwargs):
+    calculation = ETASParameterCalculation(config, **kwargs)
     calculation.prepare()
     calculation.invert()
-    calculation.store_results(inversion_config['data_path'])
+    calculation.store_results()
 
 
 def main():
     parser = argparse.ArgumentParser(argument_default=argparse.SUPPRESS)
-    parser.add_argument('config', help='Configuration file of the inversion')
-    # todo: add verbose and other extra options
-    # todo: do we want to modify config parameters here from the cmd?
+    parser.add_argument('config', help='Configuration file of the inversion',
+                        type=str)
+    parser.add_argument('-i', '--fn_catalog', help='Input catalog',
+                        type=str)
+    parser.add_argument('-o', '--data_path', help='Output file path',
+                        type=str)
+    parser.add_argument('-s', '--shape_coords', help='Input region',
+                        type=str)
+    parser.add_argument('-aux', '--auxiliary_start',
+                        help='Catalog auxiliary start',
+                        type=str)
+    parser.add_argument('-start', '--timewindow_start',
+                        help='Training start window',
+                        type=str)
+    parser.add_argument('-end', '--timewindow_end',
+                        help='Training start window',
+                        type=str)
+    parser.add_argument('-mc', help='Completeness magnitude',
+                        type=float)
+    # todo: add verbose?
     args = parser.parse_args()
     invert_etas(**vars(args))
 

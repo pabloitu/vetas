@@ -27,9 +27,9 @@ if __name__ == '__main__':
 
     simulation = ETASSimulation(etas_invert)
     simulation.prepare()
-    fn_store_simulation = forecast_config['fn_store_simulation']
-    forecast_duration = forecast_config['forecast_duration']
-    n_simulations = forecast_config['n_simulations']
+    fn_store_simulation = 'output/simulations.csv'
+    forecast_duration = 30
+    n_simulations = 100
 
     # to store the forecast in a csv instead of just producting it,
     # do the following:

@@ -845,7 +845,7 @@ class ETASSimulation:
                                   chunksize, info_cols)
 
         # create new file for first chunk
-        os.makedirs(os.path.dirname(fn_store), exist_ok=True)
+        os.makedirs(os.path.abspath(os.path.dirname(fn_store)), exist_ok=True)
         next(generator).to_csv(fn_store, mode='w', header=True,
                                index=False)
 
