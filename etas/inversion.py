@@ -600,7 +600,6 @@ class ETASParameterCalculation:
                                          metadata.get('shape_coords', None))
         self.data_path = os.path.join(self._path,
                                       metadata.get('data_path', ''))
-
         # Set config hyperparameters
         self.delta_m = metadata['delta_m']
         self.mc = metadata['mc']
@@ -615,19 +614,6 @@ class ETASParameterCalculation:
                          .format(self.free_productivity,
                                  self.free_background))
 
-        # Set time frames
-        self.auxiliary_start = pd.to_datetime(metadata['auxiliary_start'])
-        self.timewindow_start = pd.to_datetime(metadata['timewindow_start'])
-        self.timewindow_end = pd.to_datetime(metadata['timewindow_end'])
-        self.timewindow_length = to_days(
-            self.timewindow_end - self.timewindow_start)
-        self.calculation_date = dt.datetime.now()
-        self.logger.info('  Time Window: \n      {} (aux start)\n      {} '
-                         '(start)\n      {} (end).'
-                         .format(self.auxiliary_start,
-                                 self.timewindow_start,
-                                 self.timewindow_end))
-
         self.preparation_done = False
         self.inversion_done = False
 
@@ -640,11 +626,25 @@ class ETASParameterCalculation:
         self.__theta_0 = None
         self.theta_0 = metadata.get('theta_0')
         self.__theta = None
+        self.theta = metadata.get('theta', None)
         self.pij = None
         self.n_hat = None
-        self.i = metadata.get('n_iterations')
+        self.n_iterations = metadata.get('n_iterations')
 
         self.__dict__.update(**kwargs)
+
+        # Set time frames
+        self.auxiliary_start = pd.to_datetime(metadata['auxiliary_start'])
+        self.timewindow_start = pd.to_datetime(metadata['timewindow_start'])
+        self.timewindow_end = pd.to_datetime(metadata['timewindow_end'])
+        self.timewindow_length = to_days(
+            self.timewindow_end - self.timewindow_start)
+        self.calculation_date = dt.datetime.now()
+        self.logger.info('  Time Window: \n      {} (aux start)\n      {} '
+                         '(start)\n      {} (end).'
+                         .format(self.auxiliary_start,
+                                 self.timewindow_start,
+                                 self.timewindow_end))
 
         # Parse input files
         if not isinstance(self.catalog, pd.DataFrame):
@@ -802,7 +802,7 @@ class ETASParameterCalculation:
 
         self.logger.info('  stopping here. converged after '
                          '{} iterations.'.format(i))
-        self.i = i
+        self.n_iterations = i
 
         self.logger.info('    last expectation step')
         self.pij, self.target_events, self.source_events, self.n_hat = \
@@ -982,9 +982,9 @@ class ETASParameterCalculation:
             'beta': self.beta,
             'n_hat': self.n_hat,
             'calculation_date': str(self.calculation_date),
-            'initial_values': self.theta_0,
-            'final_parameters': self.theta,
-            'n_iterations': self.i,
+            'theta_0': self.theta_0,
+            'theta': self.theta,
+            'n_iterations': self.n_iterations,
             'fn_ip': fn_ip,
             'fn_src': fn_src,
         }
