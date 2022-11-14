@@ -1,30 +1,32 @@
 import argparse
 import os
 import logging
-import json
-import pandas
-import numpy
-from shapely.geometry import Polygon
 from etas.commands.sim import sim, sim_time_inv
 from etas import set_up_logger
-from etas.commands.inv import invert_etas
 from etas.inversion import ETASParameterCalculation
 
 set_up_logger(level=logging.DEBUG)
 
 
-def run(config, output_fn='simulation.csv', time_invariant=False,
-        forecast_duration=30, n_sims=100, **kwargs):
-    if time_invariant:
-        invert_etas(config, **kwargs)
-        # todo get parameter name
-        sim_time_inv('output/parameters_ch.json')
-
+def run(config, output_fn='simulation.csv', continuation=True,
+        parameters=False, forecast_duration=30, n_sims=100, **kwargs):
+    if parameters:
+        print(parameters)
+        calculation = ETASParameterCalculation.load_calculation(parameters)
     else:
-        invert_etas(config, **kwargs)
-        sim('output/parameters_ch.json')
-    # simulation.prepare()
-    # simulation.simulate_to_csv(output_fn, forecast_duration, n_sims, **kwargs)
+        calculation = ETASParameterCalculation(config, **kwargs)
+        calculation.prepare()
+        calculation.invert()
+        calculation.store_results()
+
+        subscript = ('_' + str(calculation.id)) * bool(calculation.id)
+        parameters = os.path.join(calculation.data_path,
+                                  f'parameters{subscript}.json')
+    if continuation:
+        sim(parameters, output_fn=output_fn,
+            forecast_duration=forecast_duration, n_sims=n_sims, **kwargs)
+    else:
+        sim_time_inv(parameters)
 
 
 def main():
@@ -32,9 +34,11 @@ def main():
     parser.add_argument('config', help='Configuration file or parameter file'
                                        ' of the simulation', type=str)
     parser.add_argument('-o', '--output_fn', help='Output filename', type=str)
-    parser.add_argument('-ti', '--time_invariant',
+    parser.add_argument('-c', '--continuation',
                         help='Time invariant or dependent forecast.'
-                             'i.e. Follows previous sequences', type=bool)
+                             'i.e. Continues previous sequences', type=bool)
+    parser.add_argument('-p', '--parameters',
+                        help='Previously estimated parameters file', type=str)
 
     args = parser.parse_args()
     run(**vars(args))
