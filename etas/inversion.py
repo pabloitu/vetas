@@ -933,20 +933,22 @@ class ETASParameterCalculation:
         os.makedirs(self.data_path, exist_ok=True)
         self.logger.info(f'  Data will be stored in {self.data_path}')
 
+        subscript = ('_' + str(self.id)) * bool(self.id)
+
         fn_parameters = os.path.join(self.data_path,
-                                     f'parameters_{self.id}.json')
+                                     f'parameters{subscript}.json')
         fn_ip = os.path.join(self.data_path,
-                             f'trig_and_bg_probs_{self.id}.csv')
-        fn_src = os.path.join(self.data_path, f'sources_{self.id}.csv')
-        fn_dist = os.path.join(self.data_path, f'distances_{self.id}.csv')
-        fn_pij = os.path.join(self.data_path, f'pij_{self.id}.csv')
+                             f'trig_and_bg_probs{subscript}.csv')
+        fn_src = os.path.join(self.data_path, f'sources{subscript}.csv')
+        fn_dist = os.path.join(self.data_path, f'distances{subscript}.csv')
+        fn_pij = os.path.join(self.data_path, f'pij{subscript}.csv')
 
         self.target_events.to_csv(fn_ip)
         self.source_events.to_csv(fn_src)
 
         if self.fn_catalog is None:
             self.fn_catalog = os.path.join(self.data_path,
-                                           'catalog_{}.csv'.format(self.id))
+                                           f'catalog{subscript}.csv')
             self.catalog.to_csv(self.fn_catalog)
 
         all_info = {

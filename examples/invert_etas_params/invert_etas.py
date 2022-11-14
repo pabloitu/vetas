@@ -8,7 +8,7 @@ set_up_logger(level=logging.DEBUG)
 '''
     Inverts ETAS parameters.
     
-    Config file for this example is in 'artifacts/invert_etas_config.json'
+    Config file for this example is in 'config_etas_inv.json'
     From the command line, this example can also be run as:
     
         etas-inv config_etas_inv.json
