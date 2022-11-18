@@ -21,6 +21,7 @@ import pandas as pd
 from scipy.special import gamma as gamma_func
 from scipy.special import gammainccinv
 from shapely.geometry import Polygon
+import json
 
 from etas.inversion import (ETASParameterCalculation, branching_ratio,
                             expected_aftershocks, haversine,
@@ -486,11 +487,20 @@ def simulate_catalog(auxiliary_catalog, auxiliary_start, primary_start,
 
 
 class ETASSimulation:
-    def __init__(self, inversion_params: ETASParameterCalculation,
+    def __init__(self, inversion_params: (ETASParameterCalculation, str),
                  gaussian_scale: float = 0.1, approx_times: bool = False):
 
         self.logger = logging.getLogger(__name__)
-
+        # Either a path to parameters file is given
+        if isinstance(inversion_params, str):
+            self._path = os.path.abspath(os.path.dirname(inversion_params))
+            init_type = 'Parameters File'
+            with open(inversion_params, 'r') as f:
+                inversion_params = json.load(f)
+        # or an ETAS inversion result is given
+        else:
+            self._path = os.getcwd()
+            init_type = 'ETASParameterCalculation'
         self.inversion_params = inversion_params
 
         self.forecast_start_date = None
@@ -505,8 +515,11 @@ class ETASSimulation:
         self.gaussian_scale = gaussian_scale
         self.approx_times = approx_times
 
-        self.logger.debug('using parameters calculated on {}\n'.format(
-            inversion_params.calculation_date))
+        if init_type == 'ETASParameterCalculation':
+            self.logger.debug('using parameters calculated on {}\n'.format(
+                inversion_params.calculation_date))
+        else:
+            self.logger.debug('using parameters from input file')
         self.logger.debug(pprint.pformat(self.inversion_params.theta))
 
         self.logger.info(
