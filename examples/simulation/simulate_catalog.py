@@ -5,10 +5,10 @@ import pandas
 import numpy
 from shapely.geometry import Polygon
 from etas import set_up_logger
-from etas.simulation import generate_catalog
+from etas.simulation import simulate_catalog
 from etas.inversion import round_half_up
 
-set_up_logger(level=logging.INFO)
+set_up_logger(level=logging.DEBUG)
 
 # todo
 '''
@@ -24,10 +24,12 @@ if __name__ == '__main__':
                              simulation_config["shape_coords"])
     region = Polygon(numpy.load(region_fn))
 
-    synthetic = generate_catalog(
+    synthetic = simulate_catalog(
+        auxiliary_catalog=None,
         polygon=region,
-        timewindow_start=pandas.to_datetime(simulation_config["burn_start"]),
-        timewindow_end=pandas.to_datetime(simulation_config["end"]),
+        auxiliary_start=pandas.to_datetime(simulation_config["burn_start"]),
+        primary_start=pandas.to_datetime(simulation_config["primary_start"]),
+        simulation_end=pandas.to_datetime(simulation_config["end"]),
         parameters=simulation_config["theta"],
         mc=simulation_config["mc"],
         beta_main=simulation_config["beta"],

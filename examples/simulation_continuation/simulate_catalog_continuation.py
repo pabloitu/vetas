@@ -18,6 +18,7 @@ import logging
 from etas import set_up_logger
 from etas.inversion import ETASParameterCalculation
 from etas.simulation import ETASSimulation
+import os
 
 set_up_logger(level=logging.INFO)
 
@@ -25,8 +26,12 @@ set_up_logger(level=logging.INFO)
 def main():
     # Simulation parameters.
     forecast_duration = 365
-    fn_inversion_output = "inversion_input/parameters_0.json"
-    fn_store_simulation = "output/simulated_catalog_continuation.csv"
+    fn_inversion_output = os.path.join(
+        os.path.dirname(__file__),
+        '../invert_etas_params/output/parameters_inv.json')
+    fn_store_simulation = os.path.join(
+        os.path.dirname(__file__),
+        'output/simulated_catalog_continuation.csv')
     n_sims = 1
 
     # Load ETAS parameters
