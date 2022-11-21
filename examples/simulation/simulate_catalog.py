@@ -39,33 +39,5 @@ def main():
                                n_sims)
 
 
-    # region_fn = os.path.join(os.path.dirname(__file__),
-    #                          simulation_config["shape_coords"])
-    # region = Polygon(numpy.load(region_fn))
-
-    # synthetic = simulate_catalog(
-    #     auxiliary_catalog=None,
-    #     polygon=region,
-    #     auxiliary_start=pandas.to_datetime(simulation_config["burn_start"]),
-    #     primary_start=pandas.to_datetime(simulation_config["primary_start"]),
-    #     simulation_end=pandas.to_datetime(simulation_config["end"]),
-    #     parameters=simulation_config["theta"],
-    #     mc=simulation_config["mc"],
-    #     beta_main=simulation_config["beta"],
-    #     delta_m=simulation_config["delta_m"]
-    # )
-    #
-    # synthetic.magnitude = round_half_up(synthetic.magnitude, 1)
-    # synthetic.index.name = 'id'
-    # print("store catalog..")
-    # primary_start = simulation_config['primary_start']
-    # fn_store = os.path.join(os.path.dirname(__file__),
-    #                         simulation_config['fn_store'])
-    # os.makedirs(os.path.dirname(fn_store), exist_ok=True)
-    # synthetic[["latitude", "longitude", "time", "magnitude"]].query(
-    #     "time>=@primary_start").to_csv(fn_store)
-    # print("\nDONE!")
-
-
 if __name__ == '__main__':
     main()
