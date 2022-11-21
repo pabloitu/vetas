@@ -43,7 +43,8 @@ def main():
     simulation.prepare()
 
     # Simulate and store one catalog
-    simulation.simulate_to_csv(fn_store_simulation, forecast_duration, n_sims)
+    simulation.simulate_to_csv(fn_store_simulation, n_simulations=n_sims,
+                               forecast_n_days=forecast_duration)
 
 
 if __name__ == '__main__':

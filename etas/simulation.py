@@ -515,7 +515,10 @@ class ETASSimulation:
             self.inversion_params.shape_coords)
 
         self.primary_start = None
-        self.simulation_end = None
+        if hasattr(self.inversion_params, 'end'):
+            self.simulation_end = pd.to_datetime(self.inversion_params.end)
+        else:
+            self.simulation_end = None
 
         self.catalog = None
         self.target_events = None
@@ -582,7 +585,7 @@ class ETASSimulation:
         self.target_events = self.target_events[
             self.target_events.intersects(self.polygon)]
 
-    def simulate(self, forecast_n_days: int, n_simulations: int,
+    def simulate(self, n_simulations: int, forecast_n_days: int,
                  m_threshold: float = None, chunksize: int = 100,
                  info_cols: list = ['is_background']) -> None:
         start = dt.datetime.now()
@@ -596,9 +599,15 @@ class ETASSimulation:
         if n_simulations != 1:
             cols.append('catalog_id')
 
-        self.simulation_end = self.primary_start + dt.timedelta(
-            days=forecast_n_days)
+        if self.simulation_end is None:
+            self.simulation_end = self.primary_start + dt.timedelta(
+                days=forecast_n_days)
 
+        logger.info(
+            f'Simulating {n_simulations} '
+            f'catalogs starting {self.auxiliary_start}, '
+            f'primary start {self.primary_start}, '
+            f'ending {self.simulation_end}')
         simulations = pd.DataFrame()
         for sim_id in np.arange(n_simulations):
             continuation = simulate_catalog(
@@ -650,12 +659,16 @@ class ETASSimulation:
                 simulations = pd.DataFrame()
         self.logger.info("DONE simulating!")
 
-    def simulate_to_csv(self, fn_store: str, forecast_n_days: int,
-                        n_simulations: int, m_threshold: float = None,
+    def simulate_to_csv(self, fn_store: str,
+                        n_simulations: int, forecast_n_days: int = None,
+                        m_threshold: float = None,
                         chunksize: int = 100, info_cols: list = []) -> None:
         generator = self.simulate(
-            forecast_n_days, n_simulations, m_threshold,
-            chunksize, info_cols)
+            forecast_n_days=forecast_n_days,
+            n_simulations=n_simulations,
+            m_threshold=m_threshold,
+            chunksize=chunksize,
+            info_cols=info_cols)
 
         # create new file for first chunk
         os.makedirs(os.path.abspath(os.path.dirname(fn_store)), exist_ok=True)

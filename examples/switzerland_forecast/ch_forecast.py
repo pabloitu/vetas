@@ -29,7 +29,7 @@ def main():
     simulation.prepare()
 
     store = pd.DataFrame()
-    for chunk in simulation.simulate(forecast_duration, n_simulations):
+    for chunk in simulation.simulate(n_simulations, forecast_duration):
         store = pd.concat([store, chunk],
                           ignore_index=False)
 

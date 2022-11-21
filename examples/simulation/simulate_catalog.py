@@ -10,7 +10,7 @@ from etas.inversion import round_half_up
 from etas.inversion import ETASParameterCalculation
 from etas.simulation import ETASSimulation
 
-set_up_logger(level=logging.DEBUG)
+set_up_logger(level=logging.INFO)
 
 # todo
 # I am in the middle of allowing the simulation __init__ to take a dict
@@ -21,7 +21,6 @@ Doc pending
 
 
 def main():
-    simulation_duration = 365 # in days
     fn_parameters = os.path.join(
         os.path.dirname(__file__),
         'simulation_parameters.json')
@@ -35,8 +34,8 @@ def main():
     # simulation.prepare()
 
     # Simulate and store one catalog
-    simulation.simulate_to_csv(fn_store_simulation, simulation_duration,
-                               n_sims)
+    simulation.simulate_to_csv(fn_store_simulation,
+                               n_simulations=n_sims)
 
 
 if __name__ == '__main__':
