@@ -195,11 +195,12 @@ def generate_background_events(polygon, timewindow_start, timewindow_end,
     # generate lat, long
     if background_probs is not None:
         catalog["latitude"], catalog[
-            "longitude"] = simulate_background_location(background_lats,
-                                                        background_lons,
-                                                        background_probs=background_probs,
-                                                        scale=gaussian_scale,
-                                                        n=n_generate)
+            "longitude"] = simulate_background_location(
+                background_lats,
+                background_lons,
+                background_probs=background_probs,
+                scale=gaussian_scale,
+                n=n_generate)
     else:
         catalog["latitude"] = np.random.uniform(min_lat, max_lat,
             size=n_generate)
@@ -510,7 +511,8 @@ class ETASSimulation:
             self._path = os.getcwd()
             self.init_type = 'ETASParameterCalculation'
         self.inversion_params = inversion_params
-        self.inversion_params.shape_coords = read_shape_coords(self.inversion_params.shape_coords)
+        self.inversion_params.shape_coords = read_shape_coords(
+            self.inversion_params.shape_coords)
 
         self.primary_start = None
         self.simulation_end = None
@@ -599,21 +601,25 @@ class ETASSimulation:
 
         simulations = pd.DataFrame()
         for sim_id in np.arange(n_simulations):
-            continuation = simulate_catalog(self.catalog,
-                                            auxiliary_start=self.auxiliary_start,
-                                            primary_start=self.primary_start,
-                                            polygon=self.polygon,
-                                            simulation_end=self.simulation_end,
-                                            parameters=self.inversion_params.theta,
-                                            mc=self.inversion_params.m_ref - self.inversion_params.delta_m / 2,
-                                            beta_main=self.inversion_params.beta,
-                                            background_lats=self.target_events['latitude'] if self.target_events is not None else None,
-                                            background_lons=self.target_events['longitude'] if self.target_events is not None else None,
-                                            background_probs=self.target_events['P_background'] *
+            continuation = simulate_catalog(
+                self.catalog,
+                auxiliary_start=self.auxiliary_start,
+                primary_start=self.primary_start,
+                polygon=self.polygon,
+                simulation_end=self.simulation_end,
+                parameters=self.inversion_params.theta,
+                mc=self.inversion_params.m_ref - self.inversion_params.delta_m / 2,
+                beta_main=self.inversion_params.beta,
+                background_lats=self.target_events[
+                    'latitude'] if self.target_events is not None else None,
+                background_lons=self.target_events[
+                    'longitude'] if self.target_events is not None else None,
+                background_probs=self.target_events['P_background'] *
                                  self.target_events['zeta_plus_1'] / max(
-                    self.target_events['zeta_plus_1']) if self.target_events is not None else None,
-                                            gaussian_scale=self.gaussian_scale, filter_polygon=False,
-                                            approx_times=self.approx_times, )
+                    self.target_events[
+                        'zeta_plus_1']) if self.target_events is not None else None,
+                gaussian_scale=self.gaussian_scale, filter_polygon=False,
+                approx_times=self.approx_times, )
 
             continuation["catalog_id"] = sim_id
             simulations = pd.concat([simulations, continuation],
@@ -647,8 +653,9 @@ class ETASSimulation:
     def simulate_to_csv(self, fn_store: str, forecast_n_days: int,
                         n_simulations: int, m_threshold: float = None,
                         chunksize: int = 100, info_cols: list = []) -> None:
-        generator = self.simulate(forecast_n_days, n_simulations, m_threshold,
-                                  chunksize, info_cols)
+        generator = self.simulate(
+            forecast_n_days, n_simulations, m_threshold,
+            chunksize, info_cols)
 
         # create new file for first chunk
         os.makedirs(os.path.abspath(os.path.dirname(fn_store)), exist_ok=True)
