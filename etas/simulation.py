@@ -26,7 +26,7 @@ import json
 from etas.inversion import (ETASParameterCalculation, branching_ratio,
                             expected_aftershocks, haversine,
                             parameter_dict2array, round_half_up, to_days,
-                            upper_gamma_ext)
+                            upper_gamma_ext, read_shape_coords)
 from etas.mc_b_est import simulate_magnitudes
 
 logger = logging.getLogger(__name__)
@@ -486,6 +486,13 @@ def simulate_catalog(auxiliary_catalog, auxiliary_start, primary_start,
         return catalog
 
 
+class DotDict(dict):
+    """dot.notation access to dictionary attributes"""
+    __getattr__ = dict.get
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
+
+
 class ETASSimulation:
     def __init__(self, inversion_params: (ETASParameterCalculation, str),
                  gaussian_scale: float = 0.1, approx_times: bool = False):
@@ -494,17 +501,19 @@ class ETASSimulation:
         # Either a path to parameters file is given
         if isinstance(inversion_params, str):
             self._path = os.path.abspath(os.path.dirname(inversion_params))
-            init_type = 'Parameters File'
+            self.init_type = 'Parameters File'
             with open(inversion_params, 'r') as f:
                 inversion_params = json.load(f)
+            inversion_params = DotDict(inversion_params)
         # or an ETAS inversion result is given
         else:
             self._path = os.getcwd()
-            init_type = 'ETASParameterCalculation'
+            self.init_type = 'ETASParameterCalculation'
         self.inversion_params = inversion_params
+        self.inversion_params.shape_coords = read_shape_coords(self.inversion_params.shape_coords)
 
-        self.forecast_start_date = None
-        self.forecast_end_date = None
+        self.primary_start = None
+        self.simulation_end = None
 
         self.catalog = None
         self.target_events = None
@@ -515,17 +524,28 @@ class ETASSimulation:
         self.gaussian_scale = gaussian_scale
         self.approx_times = approx_times
 
-        if init_type == 'ETASParameterCalculation':
+        if self.init_type == 'ETASParameterCalculation':
+            self.logger.info(
+                'm_ref: {}, min magnitude in training catalog: {}'.format(
+                    self.inversion_params.m_ref,
+                    self.inversion_params.catalog['magnitude'].min()))
             self.logger.debug('using parameters calculated on {}\n'.format(
                 inversion_params.calculation_date))
         else:
             self.logger.debug('using parameters from input file')
-        self.logger.debug(pprint.pformat(self.inversion_params.theta))
 
-        self.logger.info(
-            'm_ref: {}, min magnitude in training catalog: {}'.format(
-                self.inversion_params.m_ref,
-                self.inversion_params.catalog['magnitude'].min()))
+        self.logger.debug(pprint.pformat(self.inversion_params.theta))
+        self.polygon = Polygon(self.inversion_params.shape_coords)
+
+        # end of training period is start of forecasting period
+        if self.init_type == 'ETASParameterCalculation':
+            self.auxiliary_start = self.inversion_params.auxiliary_start
+            self.primary_start = self.inversion_params.timewindow_end
+        else:
+            self.auxiliary_start = \
+                pd.to_datetime(self.inversion_params.burn_start)
+            self.primary_start = \
+                pd.to_datetime(self.inversion_params.primary_start)
 
     def prepare(self):
         self.polygon = Polygon(self.inversion_params.shape_coords)
@@ -574,36 +594,36 @@ class ETASSimulation:
         if n_simulations != 1:
             cols.append('catalog_id')
 
-        # end of training period is start of forecasting period
-        self.forecast_start_date = self.inversion_params.timewindow_end
-        self.forecast_end_date = self.forecast_start_date + dt.timedelta(
+        self.simulation_end = self.primary_start + dt.timedelta(
             days=forecast_n_days)
 
         simulations = pd.DataFrame()
         for sim_id in np.arange(n_simulations):
             continuation = simulate_catalog(self.catalog,
-                auxiliary_start=self.inversion_params.auxiliary_start,
-                primary_start=self.forecast_start_date, polygon=self.polygon,
-                simulation_end=self.forecast_end_date,
-                parameters=self.inversion_params.theta,
-                mc=self.inversion_params.m_ref - self.inversion_params.delta_m / 2,
-                beta_main=self.inversion_params.beta,
-                background_lats=self.target_events['latitude'],
-                background_lons=self.target_events['longitude'],
-                background_probs=self.target_events['P_background'] *
+                                            auxiliary_start=self.auxiliary_start,
+                                            primary_start=self.primary_start,
+                                            polygon=self.polygon,
+                                            simulation_end=self.simulation_end,
+                                            parameters=self.inversion_params.theta,
+                                            mc=self.inversion_params.m_ref - self.inversion_params.delta_m / 2,
+                                            beta_main=self.inversion_params.beta,
+                                            background_lats=self.target_events['latitude'] if self.target_events is not None else None,
+                                            background_lons=self.target_events['longitude'] if self.target_events is not None else None,
+                                            background_probs=self.target_events['P_background'] *
                                  self.target_events['zeta_plus_1'] / max(
-                    self.target_events['zeta_plus_1']),
-                gaussian_scale=self.gaussian_scale, filter_polygon=False,
-                approx_times=self.approx_times, )
+                    self.target_events['zeta_plus_1']) if self.target_events is not None else None,
+                                            gaussian_scale=self.gaussian_scale, filter_polygon=False,
+                                            approx_times=self.approx_times, )
 
             continuation["catalog_id"] = sim_id
             simulations = pd.concat([simulations, continuation],
                                     ignore_index=False)
 
             if sim_id % chunksize == 0 or sim_id == n_simulations - 1:
-                simulations.query('time>=@self.forecast_start_date and '
-                                  'time<=@self.forecast_end_date and '
-                                  'magnitude>=@m_threshold-@self.inversion_params.delta_m/2',
+                m_cut = m_threshold - self.inversion_params.delta_m / 2
+                simulations.query('time>=@self.primary_start and '
+                                  'time<=@self.simulation_end and '
+                                  'magnitude>=@m_cut',
                     inplace=True)
                 simulations.magnitude = round_half_up(simulations.magnitude, 1)
                 simulations.index.name = 'id'

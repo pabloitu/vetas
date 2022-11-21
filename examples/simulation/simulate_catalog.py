@@ -32,7 +32,7 @@ def main():
 
     # Initialize simulation
     simulation = ETASSimulation(fn_parameters)
-    simulation.prepare()
+    # simulation.prepare()
 
     # Simulate and store one catalog
     simulation.simulate_to_csv(fn_store_simulation, simulation_duration,
