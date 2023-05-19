@@ -6,7 +6,7 @@ import pandas
 import numpy
 from shapely.geometry import Polygon
 from etas import set_up_logger
-from etas.simulation import generate_catalog, ETASSimulation
+from etas.simulation import simulate_catalog, ETASSimulation
 from etas.inversion import round_half_up, read_shape_coords, \
     ETASParameterCalculation
 
@@ -31,7 +31,7 @@ def sim_time_inv(config_fn):
     else:
         region = read_shape_coords(config["shape_coords"])
 
-    synthetic = generate_catalog(
+    synthetic = simulate_catalog(
         polygon=region,
         timewindow_start=pandas.to_datetime(config["burn_start"]),
         timewindow_end=pandas.to_datetime(config["end"]),
@@ -59,10 +59,11 @@ def sim(parameter_fn, output_fn='simulation.csv',
 
     simulation = ETASSimulation(etas_inversion_reload)
     simulation.prepare()
-    simulation.simulate_to_csv(output_fn, forecast_duration, n_sims, **kwargs)
+
+    simulation.simulate_to_csv(output_fn, n_sims, forecast_duration, **kwargs)
 
 
-def simulate_catalog(config, seed=None, **kwargs):
+def sim_catalog(config, seed=None, **kwargs):
     exist_auxcat = parse_config(config)
 
     if seed:
@@ -77,8 +78,9 @@ def simulate_catalog(config, seed=None, **kwargs):
 
 def main():
     parser = argparse.ArgumentParser(argument_default=argparse.SUPPRESS)
-    parser.add_argument('config', help='Configuration file or parameter file'
-                                       ' of the simulation', type=str)
+    parser.add_argument('parameter_fn',
+                        help='Configuration file or parameter file'
+                             ' of the simulation', type=str)
     parser.add_argument('-o', '--output_fn', help='Output filename', type=str)
     parser.add_argument('-t', '--forecast_duration',
                         help='Duration of the forecast (in days)', type=int)
@@ -90,8 +92,11 @@ def main():
     parser.add_argument('-s', '--seed',
                         help='Seed for pseudo-random number generation',
                         type=int)
+    parser.add_argument('-f', '--fmt',
+                        help='Output format',
+                        type=str)
     args = parser.parse_args()
-    simulate_catalog(**vars(args))
+    sim(**vars(args))
 
 
 if __name__ == '__main__':

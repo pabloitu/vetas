@@ -648,11 +648,22 @@ class ETASParameterCalculation:
 
         # Parse input files
         if not isinstance(self.catalog, pd.DataFrame):
-            self.catalog = pd.read_csv(
-                self.fn_catalog,
-                index_col=0,
-                parse_dates=['time'],
-                dtype={'url': str, 'alert': str})
+            try:
+                self.catalog = pd.read_csv(
+                    self.fn_catalog,
+                    index_col=0,
+                    parse_dates=['time'],
+                    dtype={'url': str, 'alert': str})
+                assert len(self.catalog.columns) == 5
+            except AssertionError:
+                logger.info('Reading CSEP format input catalog')
+                self.catalog = pd.read_csv(
+                    self.fn_catalog,
+                    index_col=6,
+                    parse_dates=['time'],
+                    dtype={'url': str, 'alert': str})
+                self.catalog['time'] = pd.to_datetime(self.catalog['time'],
+                                                      format='ISO8601')
         self.shape_coords = read_shape_coords(self.shape_coords)
 
     @classmethod

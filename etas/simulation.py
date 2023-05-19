@@ -79,7 +79,8 @@ def simulate_aftershock_time(log10_c, omega, log10_tau, size=1):
     y = np.random.uniform(size=size)
 
     return inverse_upper_gamma_ext(-omega,
-        (1 - y) * upper_gamma_ext(-omega, c / tau)) * tau - c
+                                   (1 - y) * upper_gamma_ext(-omega,
+                                                             c / tau)) * tau - c
 
 
 def inv_time_cdf_approx(p, c, tau, omega):
@@ -130,7 +131,8 @@ def simulate_aftershock_radius(log10_d, gamma, rho, mi, mc):
 
 
 def simulate_background_location(latitudes, longitudes, background_probs,
-        scale=0.1, grid=False, bsla=None, bslo=None, n=1):
+                                 scale=0.1, grid=False, bsla=None, bslo=None,
+                                 n=1):
     np.random.seed()
     assert np.max(background_probs) <= 1, "background_probs cannot exceed 1"
     keep_idxs = background_probs >= np.random.uniform(
@@ -177,7 +179,8 @@ def generate_background_events(polygon, timewindow_start, timewindow_end,
 
     # number of background events
     expected_n_background = np.power(10,
-        parameters["log10_mu"]) * area * timewindow_length
+                                     parameters[
+                                         "log10_mu"]) * area * timewindow_length
     n_background = np.random.poisson(lam=expected_n_background)
 
     # generate too many events, afterwards filter those that are in the polygon
@@ -189,26 +192,28 @@ def generate_background_events(polygon, timewindow_start, timewindow_end,
 
     # define dataframe with background events
     catalog = pd.DataFrame(None,
-        columns=["latitude", "longitude", "time", "magnitude", "parent",
-            "generation"])
+                           columns=["latitude", "longitude", "time",
+                                    "magnitude", "parent",
+                                    "generation"])
 
     # generate lat, long
     if background_probs is not None:
         catalog["latitude"], catalog[
             "longitude"] = simulate_background_location(
-                background_lats,
-                background_lons,
-                background_probs=background_probs,
-                scale=gaussian_scale,
-                n=n_generate)
+            background_lats,
+            background_lons,
+            background_probs=background_probs,
+            scale=gaussian_scale,
+            n=n_generate)
     else:
         catalog["latitude"] = np.random.uniform(min_lat, max_lat,
-            size=n_generate)
+                                                size=n_generate)
         catalog["longitude"] = np.random.uniform(min_lon, max_lon,
-            size=n_generate)
+                                                 size=n_generate)
 
     catalog = gpd.GeoDataFrame(catalog,
-        geometry=gpd.points_from_xy(catalog.latitude, catalog.longitude))
+                               geometry=gpd.points_from_xy(catalog.latitude,
+                                                           catalog.longitude))
     catalog = catalog[catalog.intersects(polygon)].head(n_background)
 
     # if not enough events fell into the polygon, do it again...
@@ -217,25 +222,28 @@ def generate_background_events(polygon, timewindow_start, timewindow_end,
 
         # define dataframe with background events
         catalog = pd.DataFrame(None,
-            columns=["latitude", "longitude", "time", "magnitude", "parent",
-                "generation"])
+                               columns=["latitude", "longitude", "time",
+                                        "magnitude", "parent",
+                                        "generation"])
 
         # generate lat, long
         catalog["latitude"] = np.random.uniform(min_lat, max_lat,
-            size=n_generate)
+                                                size=n_generate)
         catalog["longitude"] = np.random.uniform(min_lon, max_lon,
-            size=n_generate)
+                                                 size=n_generate)
 
         catalog = gpd.GeoDataFrame(catalog,
-            geometry=gpd.points_from_xy(catalog.latitude, catalog.longitude))
+                                   geometry=gpd.points_from_xy(
+                                       catalog.latitude, catalog.longitude))
         catalog = catalog[catalog.intersects(polygon)].head(n_background)
 
     # generate time, magnitude
     catalog["time"] = [timewindow_start + dt.timedelta(days=d) for d in
-        np.random.uniform(0, timewindow_length, size=n_background)]
+                       np.random.uniform(0, timewindow_length,
+                                         size=n_background)]
 
     catalog["magnitude"] = simulate_magnitudes(n_background, beta=beta,
-        mc=mc - delta_m / 2)
+                                               mc=mc - delta_m / 2)
 
     # info about origin of event
     catalog["generation"] = 0
@@ -250,7 +258,7 @@ def generate_background_events(polygon, timewindow_start, timewindow_end,
     # simulate number of aftershocks
     catalog["expected_n_aftershocks"] = expected_aftershocks(
         catalog["magnitude"], params=[theta_without_mu, mc - delta_m / 2],
-        no_start=True, no_end=True, # axis=1
+        no_start=True, no_end=True,  # axis=1
     )
     catalog["n_aftershocks"] = np.random.poisson(
         lam=catalog["expected_n_aftershocks"])
@@ -274,8 +282,10 @@ def generate_aftershocks(sources, generation, parameters, beta, mc,
             log10_tau=parameters["log10_tau"], size=total_n_aftershocks)
     else:
         all_deltas = simulate_aftershock_time(log10_c=parameters["log10_c"],
-            omega=parameters["omega"], log10_tau=parameters["log10_tau"],
-            size=total_n_aftershocks)
+                                              omega=parameters["omega"],
+                                              log10_tau=parameters[
+                                                  "log10_tau"],
+                                              size=total_n_aftershocks)
 
     aftershocks = sources.loc[sources.index.repeat(sources.n_aftershocks)]
 
@@ -300,10 +310,13 @@ def generate_aftershocks(sources, generation, parameters, beta, mc,
 
     # location of aftershock
     aftershocks["radius"] = simulate_aftershock_radius(parameters["log10_d"],
-        parameters["gamma"], parameters["rho"],
-        aftershocks["parent_magnitude"], mc=mc)
+                                                       parameters["gamma"],
+                                                       parameters["rho"],
+                                                       aftershocks[
+                                                           "parent_magnitude"],
+                                                       mc=mc)
     aftershocks["angle"] = np.random.uniform(0, 2 * np.pi,
-        size=len(aftershocks))
+                                             size=len(aftershocks))
     aftershocks["degree_lon"] = haversine(
         np.radians(aftershocks["parent_latitude"]),
         np.radians(aftershocks["parent_latitude"]), np.radians(0),
@@ -322,8 +335,9 @@ def generate_aftershocks(sources, generation, parameters, beta, mc,
     as_cols = ["parent", "gen_0_parent", "time", "latitude", "longitude"]
     if polygon is not None:
         aftershocks = gpd.GeoDataFrame(aftershocks,
-            geometry=gpd.points_from_xy(aftershocks.latitude,
-                aftershocks.longitude))
+                                       geometry=gpd.points_from_xy(
+                                           aftershocks.latitude,
+                                           aftershocks.longitude))
         aftershocks = aftershocks[aftershocks.intersects(polygon)]
 
     aadf = aftershocks[as_cols].reset_index(drop=True)
@@ -331,7 +345,7 @@ def generate_aftershocks(sources, generation, parameters, beta, mc,
     # magnitudes
     n_total_aftershocks = len(aadf.index)
     aadf["magnitude"] = simulate_magnitudes(n_total_aftershocks, beta=beta,
-        mc=mc - delta_m / 2)
+                                            mc=mc - delta_m / 2)
 
     # info about generation and being background
     aadf["generation"] = generation + 1
@@ -339,8 +353,11 @@ def generate_aftershocks(sources, generation, parameters, beta, mc,
 
     # info for next generation
     aadf["expected_n_aftershocks"] = expected_aftershocks(aadf["magnitude"],
-        params=[theta_without_mu, mc - delta_m / 2], no_start=True,
-        no_end=True, )
+                                                          params=[
+                                                              theta_without_mu,
+                                                              mc - delta_m / 2],
+                                                          no_start=True,
+                                                          no_end=True, )
     aadf["n_aftershocks"] = np.random.poisson(
         lam=aadf["expected_n_aftershocks"])
 
@@ -366,11 +383,11 @@ def prepare_auxiliary_catalog(auxiliary_catalog, parameters, mc, delta_m=0):
     # simulate number of aftershocks
     catalog["expected_n_aftershocks"] = expected_aftershocks(
         catalog["magnitude"], params=[theta_without_mu, mc - delta_m / 2],
-        no_start=True, no_end=True, # axis=1
+        no_start=True, no_end=True,  # axis=1
     )
 
     catalog["n_aftershocks"] = catalog["expected_n_aftershocks"].apply(
-        np.random.poisson, # axis = 1
+        np.random.poisson,  # axis = 1
     )
 
     return catalog
@@ -426,9 +443,12 @@ def simulate_catalog(auxiliary_catalog, auxiliary_start, primary_start,
     else:
         sim_start = auxiliary_start
     background = generate_background_events(polygon, sim_start, simulation_end,
-        parameters, beta=beta_main, mc=mc, delta_m=delta_m,
-        background_lats=background_lats, background_lons=background_lons,
-        background_probs=background_probs, gaussian_scale=gaussian_scale, )
+                                            parameters, beta=beta_main, mc=mc,
+                                            delta_m=delta_m,
+                                            background_lats=background_lats,
+                                            background_lons=background_lons,
+                                            background_probs=background_probs,
+                                            gaussian_scale=gaussian_scale, )
     background["evt_id"] = ''
     background["xi_plus_1"] = 1
     logger.debug(f'number of background events: {len(background)}')
@@ -461,9 +481,12 @@ def simulate_catalog(auxiliary_catalog, auxiliary_start, primary_start,
 
         # an array with all aftershocks. to be appended to the catalog
         aftershocks = generate_aftershocks(sources, generation, parameters,
-            beta_aftershock, mc, delta_m=delta_m,
-            timewindow_end=simulation_end, timewindow_length=timewindow_length,
-            auxiliary_end=primary_start, approx_times=approx_times)
+                                           beta_aftershock, mc,
+                                           delta_m=delta_m,
+                                           timewindow_end=simulation_end,
+                                           timewindow_length=timewindow_length,
+                                           auxiliary_end=primary_start,
+                                           approx_times=approx_times)
 
         aftershocks.index += catalog.index.max() + 1
         aftershocks.query("time>@sim_start", inplace=True)
@@ -473,14 +496,15 @@ def simulate_catalog(auxiliary_catalog, auxiliary_start, primary_start,
                      f'{aftershocks["n_aftershocks"].sum()}')
         aftershocks["xi_plus_1"] = 1
         catalog = pd.concat([catalog, aftershocks], ignore_index=False,
-            sort=True)
+                            sort=True)
 
         generation = generation + 1
 
     catalog.query('time > @primary_start', inplace=True)
     if filter_polygon:
         catalog = gpd.GeoDataFrame(catalog,
-            geometry=gpd.points_from_xy(catalog.latitude, catalog.longitude))
+                                   geometry=gpd.points_from_xy(
+                                       catalog.latitude, catalog.longitude))
         catalog = catalog[catalog.intersects(polygon)]
         return catalog.drop("geometry", axis=1)
     else:
@@ -561,27 +585,30 @@ class ETASSimulation:
             self.source_events['xi_plus_1'] = 1
 
         self.catalog = pd.merge(self.source_events,
-            self.inversion_params.catalog[
-                ["latitude", "longitude", "time", "magnitude"]],
-            left_index=True, right_index=True, how='left', )
+                                self.inversion_params.catalog[
+                                    ["latitude", "longitude", "time",
+                                     "magnitude"]],
+                                left_index=True, right_index=True,
+                                how='left', )
         assert len(self.catalog) == len(
             self.source_events), "lost/found some sources in the merge! " \
                                  f"{len(self.catalog)} -- " \
                                  f"{len(self.source_events)}"
 
         np.testing.assert_allclose(self.catalog.magnitude.min(),
-            self.inversion_params.m_ref,
-            err_msg="smallest magnitude in sources is "
-                    f"{self.catalog.magnitude.min()} "
-                    f"but I am supposed to simulate "
-                    f"above {self.inversion_params.m_ref}")
+                                   self.inversion_params.m_ref,
+                                   err_msg="smallest magnitude in sources is "
+                                           f"{self.catalog.magnitude.min()} "
+                                           f"but I am supposed to simulate "
+                                           f"above {self.inversion_params.m_ref}")
 
         self.target_events = self.inversion_params.target_events.query(
             "magnitude>=@self.inversion_params.m_ref "
             "-@self.inversion_params.delta_m/2")
         self.target_events = gpd.GeoDataFrame(self.target_events,
-            geometry=gpd.points_from_xy(self.target_events.latitude,
-                self.target_events.longitude))
+                                              geometry=gpd.points_from_xy(
+                                                  self.target_events.latitude,
+                                                  self.target_events.longitude))
         self.target_events = self.target_events[
             self.target_events.intersects(self.polygon)]
 
@@ -633,13 +660,12 @@ class ETASSimulation:
             continuation["catalog_id"] = sim_id
             simulations = pd.concat([simulations, continuation],
                                     ignore_index=False)
-
             if sim_id % chunksize == 0 or sim_id == n_simulations - 1:
                 m_cut = m_threshold - self.inversion_params.delta_m / 2
                 simulations.query('time>=@self.primary_start and '
                                   'time<=@self.simulation_end and '
                                   'magnitude>=@m_cut',
-                    inplace=True)
+                                  inplace=True)
                 simulations.magnitude = round_half_up(simulations.magnitude, 1)
                 simulations.index.name = 'id'
                 self.logger.debug(
@@ -650,8 +676,9 @@ class ETASSimulation:
 
                 # now filter polygon
                 simulations = gpd.GeoDataFrame(simulations,
-                    geometry=gpd.points_from_xy(simulations.latitude,
-                        simulations.longitude))
+                                               geometry=gpd.points_from_xy(
+                                                   simulations.latitude,
+                                                   simulations.longitude))
                 simulations = simulations[simulations.intersects(self.polygon)]
 
                 yield simulations[cols]
@@ -662,21 +689,42 @@ class ETASSimulation:
     def simulate_to_csv(self, fn_store: str,
                         n_simulations: int, forecast_n_days: int = None,
                         m_threshold: float = None,
-                        chunksize: int = 100, info_cols: list = []) -> None:
+                        chunksize: int = 100, info_cols: list = [],
+                        fmt: str = 'ch') -> None:
+
+        if fmt == 'csep':
+            info_cols = ['G', 'evt_id']
+            columns = ['longitude', 'latitude', 'magnitude',
+                       'time', 'G']
+            header = ['lon', 'lat', 'm', 'time', 'depth',
+                      'catalog_id', 'event_id']
+            if n_simulations != 1:
+                columns.append('catalog_id')
+            else:
+                columns.append('G')
+            columns.append('G')
+            date_format = '%Y-%m-%dT%H:%M:%S.%f'
+        else:
+            columns = None
+            header = True
+            date_format = None
+
         generator = self.simulate(
             forecast_n_days=forecast_n_days,
             n_simulations=n_simulations,
             m_threshold=m_threshold,
             chunksize=chunksize,
-            info_cols=info_cols)
-
+            info_cols=info_cols,
+        )
         # create new file for first chunk
         os.makedirs(os.path.abspath(os.path.dirname(fn_store)), exist_ok=True)
-        next(generator).to_csv(fn_store, mode='w', header=True, index=False)
+        next(generator).to_csv(fn_store, mode='w', header=header, index=False,
+                               columns=columns, date_format=date_format)
 
         # append rest of chunks to file
         for chunk in generator:
-            chunk.to_csv(fn_store, mode='a', header=False, index=False)
+            chunk.to_csv(fn_store, mode='a', header=False, index=False,
+                         columns=columns, date_format=date_format)
 
     def simulate_to_df(self, forecast_n_days: int, n_simulations: int,
                        m_threshold: float = None, chunksize: int = 100,
