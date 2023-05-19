@@ -661,8 +661,13 @@ class ETASParameterCalculation:
                     index_col=6,
                     parse_dates=['time_string'],
                     dtype={'url': str, 'alert': str})
+                mapper = {'lon': 'longitude',
+                          'lat': 'latitude',
+                          'time_string': 'time',
+                          'mag': 'magnitude'}
+                self.catalog.rename(columns=mapper, inplace=True)
                 self.catalog['time'] = pd.to_datetime(
-                    self.catalog['time_string'],
+                    self.catalog['time'],
                     format='ISO8601')
         self.shape_coords = read_shape_coords(self.shape_coords)
 
