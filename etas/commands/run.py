@@ -51,7 +51,7 @@ def parse_args(config, fduration, nsims):
         sim_folder = os.path.join(etas.__path__[0], '..', 'forecasts')
         sim_fn = os.path.join(
             sim_folder,
-            f'etas_{start_date.isoformat()}_{end_date.isoformat()}.csv'
+            f'etas_{start_date.date().isoformat()}_{end_date.date().isoformat()}.csv'
         )
     else:
         sim_fn = 'simulation.csv'
