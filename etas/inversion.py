@@ -654,16 +654,16 @@ class ETASParameterCalculation:
                     index_col=0,
                     parse_dates=['time'],
                     dtype={'url': str, 'alert': str})
-                assert len(self.catalog.columns) == 5
-            except AssertionError:
+            except ValueError:
                 logger.info('Reading CSEP format input catalog')
                 self.catalog = pd.read_csv(
                     self.fn_catalog,
                     index_col=6,
-                    parse_dates=['time'],
+                    parse_dates=['time_string'],
                     dtype={'url': str, 'alert': str})
-                self.catalog['time'] = pd.to_datetime(self.catalog['time'],
-                                                      format='ISO8601')
+                self.catalog['time'] = pd.to_datetime(
+                    self.catalog['time_string'],
+                    format='ISO8601')
         self.shape_coords = read_shape_coords(self.shape_coords)
 
     @classmethod

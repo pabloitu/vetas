@@ -1,7 +1,7 @@
 {
   "start_date": "2016-01-01T00:00:00",
   "end_date": "2016-01-28T00:00:00",
-  "fn_catalog": "iside.csv",
+  "fn_catalog": "catalog.csv",
   "data_path": "../store",
   "auxiliary_start": "2010-01-01 00:00:00",
   "timewindow_start": "2012-01-01 00:00:00",
