@@ -8,7 +8,7 @@
 # Leila Mizrahi, Shyam Nandan, Stefan Wiemer;
 # The Effect of Declustering on the Size Distribution of Mainshocks.
 # Seismological Research Letters 2021; doi: https://doi.org/10.1785/0220200231
-##############################################################################
+##############################################################################output_data
 
 import datetime as dt
 import json
@@ -44,7 +44,7 @@ LOG10_D_RANGE = (-4, 3)
 GAMMA_RANGE = (0.01, 5.)
 RHO_RANGE = (0.01, 5.)
 RANGES = LOG10_MU_RANGE, LOG10_K0_RANGE, A_RANGE, LOG10_C_RANGE, \
-    OMEGA_RANGE, LOG10_TAU_RANGE, LOG10_D_RANGE, GAMMA_RANGE, RHO_RANGE
+         OMEGA_RANGE, LOG10_TAU_RANGE, LOG10_D_RANGE, GAMMA_RANGE, RHO_RANGE
 
 
 def coppersmith(mag, fault_type):
@@ -186,8 +186,8 @@ def branching_ratio(theta, beta):
     tau = np.power(10, log10_tau)
 
     eta = beta * k0 * np.pi * np.power(d, -rho) * np.power(tau, -omega) \
-        * np.exp(c / tau) * upper_gamma_ext(-omega, c / tau) \
-        / (rho * (-a + beta + gamma * rho))
+          * np.exp(c / tau) * upper_gamma_ext(-omega, c / tau) \
+          / (rho * (-a + beta + gamma * rho))
     return eta
 
 
@@ -249,7 +249,7 @@ def triggering_kernel(metrics, params):
     aftershock_number = source_kappa \
         if source_kappa is not None else k0 * np.exp(a * (m - mc))
     time_decay = np.exp(-time_distance / tau) / \
-        np.power((time_distance + c), (1 + omega))
+                 np.power((time_distance + c), (1 + omega))
     space_decay = 1 / np.power(
         (spatial_distance_squared + d * np.exp(gamma * (m - mc))),
         (1 + rho)
@@ -311,7 +311,7 @@ def expected_aftershocks(event, params, no_start=False, no_end=False):
                                         (event_time_to_start + c) / tau)
     if not no_end:
         time_fraction = time_fraction - \
-            upper_gamma_ext(-omega, (event_time_to_end + c) / tau)
+                        upper_gamma_ext(-omega, (event_time_to_end + c) / tau)
 
     time_factor = time_factor * time_fraction
 
@@ -353,22 +353,22 @@ def neg_log_likelihood(theta, Pij, source_events, mc_min):
 
     # space time distribution term
     Pij['likelihood_term'] = (
-        (
-            omega * np.log(tau) - np.log(
+            (
+                    omega * np.log(tau) - np.log(
                 upper_gamma_ext(-omega, c / tau))
-            + np.log(rho) + rho * np.log(
+                    + np.log(rho) + rho * np.log(
                 d * np.exp(gamma * (Pij['source_magnitude'] - mc_min))
             )
-        ) - (
-            (1 + rho) * np.log(
+            ) - (
+                    (1 + rho) * np.log(
                 Pij['spatial_distance_squared'] + (
-                    d * np.exp(gamma * (Pij['source_magnitude'] - mc_min))
+                        d * np.exp(gamma * (Pij['source_magnitude'] - mc_min))
                 )
             )
-        )
-        - (1 + omega) * np.log(Pij['time_distance'] + c)
-        - (Pij['time_distance'] + c) / tau
-        - np.log(np.pi)
+            )
+            - (1 + omega) * np.log(Pij['time_distance'] + c)
+            - (Pij['time_distance'] + c) / tau
+            - np.log(np.pi)
 
     )
     distribution_term = Pij['Pij'].mul(Pij['likelihood_term']).sum()
@@ -397,7 +397,7 @@ def expected_aftershocks_free_prod(event, params, no_start=False,
             event_magnitude, event_kappa, event_time_to_start = event
         else:
             event_magnitude, event_kappa, event_time_to_start, \
-                event_time_to_end = event
+            event_time_to_end = event
 
     number_factor = event_kappa
     area_factor = np.pi * np.power(
@@ -415,7 +415,7 @@ def expected_aftershocks_free_prod(event, params, no_start=False,
                                         (event_time_to_start + c) / tau)
     if not no_end:
         time_fraction = time_fraction - upper_gamma_ext(-omega, (
-            event_time_to_end + c) / tau)
+                event_time_to_end + c) / tau)
 
     time_factor = time_factor * time_fraction
 
@@ -447,18 +447,18 @@ def neg_log_likelihood_free_prod(theta, n_hat, Pij, source_events,
 
     # space time distribution term
     Pij["likelihood_term"] = (
-        (omega * np.log(tau) - np.log(upper_gamma_ext(-omega, c / tau))
-         + np.log(rho) + rho * np.log(
-            d * np.exp(gamma * (Pij["source_magnitude"] - mc_min))
-        ))
-        - ((1 + rho) * np.log(
-            Pij["spatial_distance_squared"] + (
+            (omega * np.log(tau) - np.log(upper_gamma_ext(-omega, c / tau))
+             + np.log(rho) + rho * np.log(
+                        d * np.exp(gamma * (Pij["source_magnitude"] - mc_min))
+                    ))
+            - ((1 + rho) * np.log(
+        Pij["spatial_distance_squared"] + (
                 d * np.exp(gamma * (Pij["source_magnitude"] - mc_min))
-            )
-        ))
-        - (1 + omega) * np.log(Pij["time_distance"] + c)
-        - (Pij["time_distance"] + c) / tau
-        - np.log(np.pi)
+        )
+    ))
+            - (1 + omega) * np.log(Pij["time_distance"] + c)
+            - (Pij["time_distance"] + c) / tau
+            - np.log(np.pi)
 
     )
     distribution_term = Pij["Pij"].mul(Pij["likelihood_term"]).sum()
@@ -512,17 +512,17 @@ def calc_diff_to_before(a, b):
 
 
 class ETASParameterCalculation:
-    def __init__(self, metadata: dict):
+    def __init__(self, metadata: (dict, str), **kwargs):
         '''
         Class to invert ETAS parameters.
 
 
         Parameters
         ----------
-        metadata : dict
-            A dict with stored metadata.
+        metadata : dict, str
+            A dict with stored metadata or filepath of a config file
 
-            Necessary attributes are:
+            Necessary dict/json attributes are:
 
             - fn_catalog: Path to the catalog. Catalog is expected to be a csv
                     file with the following columns:
@@ -575,16 +575,32 @@ class ETASParameterCalculation:
         '''
 
         self.logger = logging.getLogger(__name__)
+
+        # Instantiate config
+        if isinstance(metadata, str):
+            self._path = os.path.abspath(os.path.dirname(metadata))
+            init_type = 'Configuration File'
+            with open(metadata, 'r') as f:
+                metadata = json.load(f)
+        # An explicit dictionary is given
+        else:
+            self._path = os.getcwd()
+            init_type = 'dict'
         self.name = metadata.get('name', 'NoName ETAS Model')
         self.id = metadata.get('id', uuid.uuid4())
-        self.logger.info('INITIALIZING...')
+        self.logger.info(f'Initializing from {init_type}...')
         self.logger.info(
             '  model is named {}, has ID {}'.format(self.name, self.id))
-        self.shape_coords = read_shape_coords(
-            metadata.get('shape_coords', None))
-        self.fn_catalog = metadata.get('fn_catalog', None)
-        self.catalog = metadata.get('catalog', None)
 
+        # Set paths
+        self.fn_catalog = os.path.join(self._path,
+                                       metadata.get('fn_catalog', None))
+        self.catalog = metadata.get('catalog', None)
+        self.shape_coords = os.path.join(self._path,
+                                         metadata.get('shape_coords', None))
+        self.data_path = os.path.join(self._path,
+                                      metadata.get('data_path', ''))
+        # Set config hyperparameters
         self.delta_m = metadata['delta_m']
         self.mc = metadata['mc']
         self.m_ref = metadata['m_ref'] if self.mc == 'var' else self.mc
@@ -592,35 +608,14 @@ class ETASParameterCalculation:
         self.earth_radius = metadata.get('earth_radius', 6.3781e3)
         self.bw_sq = metadata.get('bw_sq', 1)
 
-        self.auxiliary_start = pd.to_datetime(metadata['auxiliary_start'])
-        self.timewindow_start = pd.to_datetime(metadata['timewindow_start'])
-        self.timewindow_end = pd.to_datetime(metadata['timewindow_end'])
-        self.timewindow_length = to_days(
-            self.timewindow_end - self.timewindow_start)
-        self.calculation_date = dt.datetime.now()
-
         self.free_background = metadata.get('free_background', False)
         self.free_productivity = metadata.get('free_productivity', False)
-
-        self.logger.info('  Time Window: \n      {} (aux start)\n      {} '
-                         '(start)\n      {} (end).'
-                         .format(self.auxiliary_start,
-                                 self.timewindow_start,
-                                 self.timewindow_end))
-
         self.logger.info('  free_productivity: {}, free_background: {}'
                          .format(self.free_productivity,
                                  self.free_background))
 
         self.preparation_done = False
         self.inversion_done = False
-
-        if not isinstance(self.catalog, pd.DataFrame):
-            self.catalog = pd.read_csv(
-                self.fn_catalog,
-                index_col=0,
-                parse_dates=['time'],
-                dtype={'url': str, 'alert': str})
 
         self.distances = None
         self.source_events = None
@@ -631,69 +626,67 @@ class ETASParameterCalculation:
         self.__theta_0 = None
         self.theta_0 = metadata.get('theta_0')
         self.__theta = None
+        self.theta = metadata.get('theta', None)
         self.pij = None
         self.n_hat = None
-        self.i = metadata.get('n_iterations')
+        self.n_iterations = metadata.get('n_iterations')
+
+        self.__dict__.update(**kwargs)
+
+        # Set time frames
+        self.auxiliary_start = pd.to_datetime(metadata['auxiliary_start'])
+        self.timewindow_start = pd.to_datetime(metadata['timewindow_start'])
+        self.timewindow_end = pd.to_datetime(metadata['timewindow_end'])
+        self.timewindow_length = to_days(
+            self.timewindow_end - self.timewindow_start)
+        self.calculation_date = dt.datetime.now()
+        self.logger.info('  Time Window: \n      {} (aux start)\n      {} '
+                         '(start)\n      {} (end).'
+                         .format(self.auxiliary_start,
+                                 self.timewindow_start,
+                                 self.timewindow_end))
+
+        # Parse input files
+        if not isinstance(self.catalog, pd.DataFrame):
+            try:
+                self.catalog = pd.read_csv(
+                    self.fn_catalog,
+                    index_col=0,
+                    parse_dates=['time'],
+                    dtype={'url': str, 'alert': str})
+            except ValueError:
+                logger.info('Reading CSEP format input catalog')
+                self.catalog = pd.read_csv(
+                    self.fn_catalog,
+                    index_col=6,
+                    parse_dates=['time_string'],
+                    dtype={'url': str, 'alert': str})
+                mapper = {'lon': 'longitude',
+                          'lat': 'latitude',
+                          'time_string': 'time',
+                          'mag': 'magnitude'}
+                self.catalog.rename(columns=mapper, inplace=True)
+                self.catalog['time'] = pd.to_datetime(
+                    self.catalog['time'],
+                    format='ISO8601')
+        self.shape_coords = read_shape_coords(self.shape_coords)
 
     @classmethod
-    def load_calculation(cls, metadata: dict):
-        obj = cls.__new__(cls)
+    def load_calculation(cls, metadata: (dict, str)):
+
+        if isinstance(metadata, dict):
+            obj = cls(metadata, **metadata)
+        elif isinstance(metadata, str):
+            with open(metadata, 'r') as f:
+                metadata = json.load(f)
+            obj = cls(metadata, **metadata)
+        else:
+            raise TypeError('Input calculation data not supported')
 
         obj.logger = logging.getLogger(__name__)
-        obj.name = metadata['name']
-        obj.id = metadata['id']
-
-        obj.logger.info('Loading Calculation...')
-        obj.logger.info(
-            '  model is named {}, has ID {}'.format(obj.name, obj.id))
-
-        obj.shape_coords = read_shape_coords(
-            metadata['shape_coords'])
-
-        obj.fn_catalog = metadata['fn_catalog']
-
-        obj.delta_m = metadata['delta_m']
-        obj.mc = metadata['mc']
-        obj.m_ref = metadata['m_ref']
-        obj.coppersmith_multiplier = metadata['coppersmith_multiplier']
-        obj.earth_radius = metadata['earth_radius']
-        obj.bw_sq = metadata['bw_sq']
-
-        obj.auxiliary_start = pd.to_datetime(metadata['auxiliary_start'])
-        obj.timewindow_start = pd.to_datetime(metadata['timewindow_start'])
-        obj.timewindow_end = pd.to_datetime(metadata['timewindow_end'])
-        obj.timewindow_length = metadata['timewindow_length']
-        obj.calculation_date = metadata['calculation_date']
-
-        obj.free_background = metadata['free_background']
-        obj.free_productivity = metadata['free_productivity']
-
-        obj.logger.info('  Time Window: \n      {} (aux start)\n      {} '
-                        '(start)\n      {} (end).'
-                        .format(obj.auxiliary_start,
-                                obj.timewindow_start,
-                                obj.timewindow_end))
-
-        obj.logger.info('  free_productivity: {}, free_background: {}'
-                        .format(obj.free_productivity,
-                                obj.free_background))
 
         obj.preparation_done = True
         obj.inversion_done = True
-
-        obj.catalog = pd.read_csv(
-            obj.fn_catalog,
-            index_col=0,
-            parse_dates=['time'],
-            dtype={'url': str, 'alert': str})
-
-        obj.area = metadata['area']
-        obj.beta = metadata['beta']
-        obj.theta_0 = metadata['initial_values']
-        obj.theta = metadata['final_parameters']
-
-        obj.n_hat = metadata['n_hat']
-        obj.i = metadata['n_iterations']
 
         obj.catalog = obj.filter_catalog(obj.catalog)
         obj.source_events = pd.read_csv(metadata['fn_src'], index_col=0)
@@ -747,7 +740,7 @@ class ETASParameterCalculation:
         if self.free_productivity:
             self.source_events["source_kappa"] = np.exp(
                 self.theta_0['a'] * (self.source_events[
-                    "source_magnitude"] - self.m_ref - self.delta_m / 2)
+                                         "source_magnitude"] - self.m_ref - self.delta_m / 2)
             )
         if self.free_background:
             self.target_events["P_background"] = 0.1
@@ -825,7 +818,7 @@ class ETASParameterCalculation:
 
         self.logger.info('  stopping here. converged after '
                          '{} iterations.'.format(i))
-        self.i = i
+        self.n_iterations = i
 
         self.logger.info('    last expectation step')
         self.pij, self.target_events, self.source_events, self.n_hat = \
@@ -886,7 +879,7 @@ class ETASParameterCalculation:
             'magnitude >= mc_current').copy()
         target_events.query('time > @ self.timewindow_start', inplace=True)
         target_events['mc_current_above_ref'] = target_events['mc_current'] \
-            - self.m_ref
+                                                - self.m_ref
         target_events.index.name = 'target_id'
         return target_events
 
@@ -906,7 +899,7 @@ class ETASParameterCalculation:
 
         # estimate mu independently and remove from parameters
         mu_hat = self.n_hat / \
-            (self.area * self.timewindow_length)
+                 (self.area * self.timewindow_length)
 
         if self.free_productivity:
             # select values from theta needed in free prod mode
@@ -948,27 +941,30 @@ class ETASParameterCalculation:
 
         return np.array(new_theta)
 
-    def store_results(self, data_path='', store_pij=False,
+    def store_results(self, data_path=None, store_pij=False,
                       store_distances=False):
 
-        if data_path == '':
-            data_path = os.getcwd() + '/'
+        if data_path:  # If given, replaces data_path from initial config
+            self.data_path = os.path.join(os.getcwd(), data_path)
+        os.makedirs(self.data_path, exist_ok=True)
+        self.logger.info(f'  Data will be stored in {self.data_path}')
 
-        self.logger.info('  Data will be stored in {}'.format(data_path))
+        subscript = ('_' + str(self.id)) * bool(self.id)
 
-        fn_parameters = data_path + 'parameters_{}.json'.format(self.id)
-        fn_ip = data_path + 'trig_and_bg_probs_{}.csv'.format(self.id)
-        fn_src = data_path + 'sources_{}.csv'.format(self.id)
-        fn_dist = data_path + 'distances_{}.csv'.format(self.id)
-        fn_pij = data_path + 'pij_{}.csv'.format(self.id)
+        fn_parameters = os.path.join(self.data_path,
+                                     f'parameters{subscript}.json')
+        fn_ip = os.path.join(self.data_path,
+                             f'trig_and_bg_probs{subscript}.csv')
+        fn_src = os.path.join(self.data_path, f'sources{subscript}.csv')
+        fn_dist = os.path.join(self.data_path, f'distances{subscript}.csv')
+        fn_pij = os.path.join(self.data_path, f'pij{subscript}.csv')
 
-        os.makedirs(os.path.dirname(fn_ip), exist_ok=True)
-        os.makedirs(os.path.dirname(fn_src), exist_ok=True)
         self.target_events.to_csv(fn_ip)
         self.source_events.to_csv(fn_src)
 
         if self.fn_catalog is None:
-            self.fn_catalog = data_path + 'catalog_{}.csv'.format(self.id)
+            self.fn_catalog = os.path.join(self.data_path,
+                                           f'catalog{subscript}.csv')
             self.catalog.to_csv(self.fn_catalog)
 
         all_info = {
@@ -1004,25 +1000,23 @@ class ETASParameterCalculation:
             'beta': self.beta,
             'n_hat': self.n_hat,
             'calculation_date': str(self.calculation_date),
-            'initial_values': self.theta_0,
-            'final_parameters': self.theta,
-            'n_iterations': self.i,
+            'theta_0': self.theta_0,
+            'theta': self.theta,
+            'n_iterations': self.n_iterations,
             'fn_ip': fn_ip,
             'fn_src': fn_src,
         }
 
         if store_pij:
-            os.makedirs(os.path.dirname(fn_pij), exist_ok=True)
             self.pij.to_csv(fn_pij)
             all_info['fn_pij'] = fn_pij
 
         if store_distances:
-            os.makedirs(os.path.dirname(fn_dist), exist_ok=True)
             self.distances.to_csv(fn_dist)
             all_info['fn_dist'] = fn_dist
 
         with open(fn_parameters, 'w') as f:
-            f.write(json.dumps(all_info))
+            f.write(json.dumps(all_info, indent=2))
 
     def calculate_distances(self):
         '''
@@ -1208,16 +1202,16 @@ class ETASParameterCalculation:
         target_events_0['mu'] = mu
         if self.free_background:
             target_events_0["mu"] = (
-                (((np.exp(-1 / 2 * Pij_0[
-                    "spatial_distance_squared"] / self.bw_sq) / (
-                    self.bw_sq * 2 * np.pi)).mul(
-                    target_events_0["P_background"], level=0)).groupby(
-                    level=1).sum() + target_events_0["P_background"] / (
-                    self.bw_sq * 2 * np.pi)) / (
-                    self.timewindow_length
-                    # TODO: divide by tw_length minus
-                    # target_to_end_time_distance
-                )
+                    (((np.exp(-1 / 2 * Pij_0[
+                        "spatial_distance_squared"] / self.bw_sq) / (
+                               self.bw_sq * 2 * np.pi)).mul(
+                        target_events_0["P_background"], level=0)).groupby(
+                        level=1).sum() + target_events_0["P_background"] / (
+                             self.bw_sq * 2 * np.pi)) / (
+                        self.timewindow_length
+                        # TODO: divide by tw_length minus
+                        # target_to_end_time_distance
+                    )
             ).fillna(0)
         else:
             target_events_0["mu"] = mu
@@ -1237,8 +1231,8 @@ class ETASParameterCalculation:
         target_events_0['P_triggered'] = target_events_0['P_triggered'].add(
             Pij_0['Pij'].groupby(level=1).sum()).fillna(0)
         target_events_0['P_background'] = target_events_0['mu'] / \
-            Pij_0.groupby(level=1).first()[
-            'tot_rates']
+                                          Pij_0.groupby(level=1).first()[
+                                              'tot_rates']
         target_events_0['zeta_plus_1'] = observation_factor(
             self.beta, target_events_0['mc_current_above_ref'])
 
@@ -1269,8 +1263,8 @@ class ETASParameterCalculation:
         # undefined is when G is zero, which only happens when source_kappa
         # is zero. so should be fine.
         self.source_events["source_kappa"] = (
-            self.source_events["source_kappa"] * self.source_events[
-                "l_hat"] / self.source_events["G"]).fillna(0)
+                self.source_events["source_kappa"] * self.source_events[
+            "l_hat"] / self.source_events["G"]).fillna(0)
 
     def calc_a_k0_from_kappa(self):
         prim_mags = self.catalog.query("time >=@self.timewindow_start")[

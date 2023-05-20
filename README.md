@@ -42,4 +42,11 @@ In case of questions or comments, contact me: leila.mizrahi@sed.ethz.ch.
 -   <code>output_data/</code> does not contain anything.
     -   your output goes here
 -   <code>etas/ </code>
-    -   here is where all the important functions algorithms are defined
+
+### Installation
+
+```
+python -m venv venv
+source venv/bin/activate
+pip install -e .[all]
+```
