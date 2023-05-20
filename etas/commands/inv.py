@@ -3,7 +3,7 @@ import logging
 from etas import set_up_logger
 from etas.inversion import ETASParameterCalculation
 
-set_up_logger(level=logging.DEBUG)
+set_up_logger(level=logging.INFO)
 
 
 def invert_etas(config, **kwargs):

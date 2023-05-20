@@ -10,7 +10,7 @@ from etas.simulation import simulate_catalog, ETASSimulation
 from etas.inversion import round_half_up, read_shape_coords, \
     ETASParameterCalculation
 
-set_up_logger(level=logging.DEBUG)
+set_up_logger(level=logging.INFO)
 
 
 def parse_config(config_fn):

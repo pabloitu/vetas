@@ -8,7 +8,7 @@ from etas.commands.sim import sim, sim_time_inv
 from etas import set_up_logger
 from etas.inversion import ETASParameterCalculation
 
-set_up_logger(level=logging.DEBUG)
+set_up_logger(level=logging.INFO)
 
 
 def run(config, continuation=True, forecast_duration=None,
