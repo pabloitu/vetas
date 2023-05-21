@@ -2,7 +2,7 @@ import argparse
 import os
 import logging
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import etas
 from etas.commands.sim import sim, sim_time_inv
 from etas import set_up_logger
@@ -16,6 +16,9 @@ def run(config, continuation=True, forecast_duration=None,
     config_dict, sim_fn, fd, ns = parse_args(config,
                                              forecast_duration,
                                              n_sims)
+
+    config_dict = get_prev_sim(config_dict, fd)
+
     # Invert parameters
     calculation = ETASParameterCalculation(config_dict, **kwargs)
     calculation.prepare()
@@ -33,6 +36,21 @@ def run(config, continuation=True, forecast_duration=None,
             forecast_duration=fd, n_sims=ns, **kwargs, fmt='csep')
     else:
         sim_time_inv(parameters)
+
+
+def get_prev_sim(config_dict, fd):
+    start = config_dict['start_date']
+    datapath = config_dict['data_path']
+    id_ = config_dict.get('id', 'id')
+
+    params_path = os.path.join(datapath, f'parameters_{id_}.json')
+    with open(params_path, 'r') as f:
+        prev_params = json.load(f)
+    prev_start = datetime.fromisoformat(start) - timedelta(fd)
+    if prev_start == prev_params['timewindow_end']:
+        config_dict['theta_0'] = prev_params['theta']
+
+    return config_dict
 
 
 def parse_args(config, fduration, nsims):
