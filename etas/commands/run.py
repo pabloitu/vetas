@@ -44,11 +44,12 @@ def get_prev_sim(config_dict, fd):
     id_ = config_dict.get('id', 'id')
 
     params_path = os.path.join(datapath, f'parameters_{id_}.json')
-    with open(params_path, 'r') as f:
-        prev_params = json.load(f)
-    prev_start = datetime.fromisoformat(start) - timedelta(fd)
-    if prev_start == prev_params['timewindow_end']:
-        config_dict['theta_0'] = prev_params['theta']
+    if os.path.isfile(params_path):
+        with open(params_path, 'r') as f:
+            prev_params = json.load(f)
+        prev_start = datetime.fromisoformat(start) - timedelta(fd)
+        if prev_start == prev_params['timewindow_end']:
+            config_dict['theta_0'] = prev_params['theta']
 
     return config_dict
 
