@@ -1,0 +1,90 @@
+{
+  "name": "NoName ETAS Model",
+  "id": "it",
+  "fn_catalog": "/home/pciturri/PycharmProjects/vetas/input/catalog.csv",
+  "auxiliary_start": "2010-01-01 00:00:00",
+  "timewindow_start": "2012-01-01 00:00:00",
+  "timewindow_end": "2016-01-28 00:00:00",
+  "start_date": "2016-01-28T00:00:00",
+  "end_date": "2016-02-24T00:00:00",
+  "timewindow_length": 1488.0,
+  "shape_coords": "[array([45.1,  5.5]), array([45.8,  5.7]), array([46.4,  6.2]), array([47.3,  8.4]), array([47.5,  9.8]), array([47.7, 10.7]), array([47.9, 12.2]), array([47.7, 12.8]), array([47.4, 13.7]), array([47.1, 14.3]), array([46.5, 14.8]), array([45.6, 15. ]), array([43.7, 15. ]), array([42.5, 16.8]), array([40.9, 19.1]), array([40.1, 19.5]), array([39.2, 19. ]), array([36.1, 15.7]), array([35.8, 15.1]), array([36.2, 13.8]), array([37.1, 11.9]), array([38. , 11.1]), array([42. ,  9.5]), array([43.2,  6.9]), array([43.7,  6.3]), array([44.5,  5.7]), array([45.1,  5.5])]",
+  "delta_m": 0.1,
+  "mc": 3.0,
+  "m_ref": 3.0,
+  "n_sims": 10,
+  "data_path": "../store",
+  "coppersmith_multiplier": 100,
+  "earth_radius": 6378.1,
+  "bw_sq": 1,
+  "free_productivity": false,
+  "free_background": false,
+  "preparation_done": true,
+  "inversion_done": true,
+  "n_target_events": 930,
+  "area": 821172.4484404806,
+  "log10_mu_range": [
+    -10,
+    0
+  ],
+  "log10_k0_range": [
+    -4,
+    0
+  ],
+  "a_range": [
+    0.01,
+    5.0
+  ],
+  "log10_c_range": [
+    -8,
+    0
+  ],
+  "omega_range": [
+    -0.99,
+    1
+  ],
+  "log10_tau_range": [
+    0.01,
+    5
+  ],
+  "log10_d_range": [
+    -4,
+    3
+  ],
+  "gamma_range": [
+    0.01,
+    5.0
+  ],
+  "rho_range": [
+    0.01,
+    5.0
+  ],
+  "beta": 2.4988891128968493,
+  "n_hat": 308.6796283650675,
+  "calculation_date": "2023-05-22 19:34:01.740657",
+  "theta_0": {
+    "log10_mu": -7.0989876826344664,
+    "log10_k0": -1.4882556332795929,
+    "a": 3.799155859357253,
+    "log10_c": -2.2657512576474916,
+    "omega": 0.16055109784146324,
+    "log10_tau": 3.060052929281954,
+    "log10_d": 0.37312723032084205,
+    "gamma": 1.381396473768396,
+    "rho": 1.4081069589312865
+  },
+  "theta": {
+    "log10_mu": -6.597513933776253,
+    "log10_k0": -1.9007933190469988,
+    "a": 2.0198993920408523,
+    "log10_c": -2.39290569758274,
+    "omega": 0.051749702526906895,
+    "log10_tau": 3.143170026937436,
+    "log10_d": 0.15234048706270287,
+    "gamma": 0.880444052965522,
+    "rho": 0.8992714452976258
+  },
+  "n_iterations": 18,
+  "fn_ip": "/home/pciturri/PycharmProjects/vetas/input/../store/trig_and_bg_probs_it.csv",
+  "fn_src": "/home/pciturri/PycharmProjects/vetas/input/../store/sources_it.csv"
+}
