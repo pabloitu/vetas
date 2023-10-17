@@ -27,13 +27,15 @@ def main():
     fn_store_simulation = os.path.join(
         os.path.dirname(__file__),
         'output/simulated_catalog.csv')
-    n_sims = 1
+    n_sims = 10
 
     # Initialize simulation
     simulation = ETASSimulation(fn_parameters)
     # simulation.prepare()
 
     # Simulate and store one catalog
+    import numpy as np
+    np.random.seed(23)
     simulation.simulate_to_csv(fn_store_simulation,
                                n_simulations=n_sims)
 
