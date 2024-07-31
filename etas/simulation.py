@@ -33,7 +33,6 @@ logger = logging.getLogger(__name__)
 
 
 def inverse_upper_gamma_ext(a, y):
-    # TODO: find a more elegant way to do this
     if a > 0:
         return gammainccinv(a, y / gamma_func(a))
     else:
@@ -186,8 +185,8 @@ def generate_background_events(polygon, timewindow_start, timewindow_end,
     # generate too many events, afterwards filter those that are in the polygon
     n_generate = int(np.round(n_background * rectangle_area / area * 1.2))
 
-    logger.info(f"  number of background events needed: {n_background}")
-    logger.info(
+    logger.debug(f"  number of background events needed: {n_background}")
+    logger.debug(
         f"  generating {n_generate} to throw away those outside the polygon")
 
     # define dataframe with background events
@@ -218,7 +217,7 @@ def generate_background_events(polygon, timewindow_start, timewindow_end,
 
     # if not enough events fell into the polygon, do it again...
     while len(catalog) != n_background:
-        logger.info("  didn't create enough events. trying again..")
+        logger.debug("  didn't create enough events. trying again..")
 
         # define dataframe with background events
         catalog = pd.DataFrame(None,
@@ -437,7 +436,7 @@ def simulate_catalog(auxiliary_catalog, auxiliary_start, primary_start,
         beta_aftershock = beta_main
 
     # generate background events
-    logger.info("generating background events..")
+    logger.debug("generating background events..")
     if auxiliary_catalog is not None:
         sim_start = primary_start
     else:

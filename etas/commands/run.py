@@ -7,6 +7,8 @@ import etas
 from etas.commands.sim import sim, sim_time_inv
 from etas import set_up_logger
 from etas.inversion import ETASParameterCalculation
+import shutup
+shutup.please()
 
 set_up_logger(level=logging.INFO)
 

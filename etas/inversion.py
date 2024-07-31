@@ -640,7 +640,7 @@ class ETASParameterCalculation:
         self.timewindow_length = to_days(
             self.timewindow_end - self.timewindow_start)
         self.calculation_date = dt.datetime.now()
-        self.logger.info('  Time Window: \n      {} (aux start)\n      {} '
+        self.logger.debug('  Time Window: \n      {} (aux start)\n      {} '
                          '(start)\n      {} (end).'
                          .format(self.auxiliary_start,
                                  self.timewindow_start,
@@ -735,7 +735,7 @@ class ETASParameterCalculation:
             mc=0,
             delta_m=self.delta_m
         )
-        self.logger.info('  beta of primary catalog is {}'.format(self.beta))
+        self.logger.debug('  beta of primary catalog is {}'.format(self.beta))
 
         if self.free_productivity:
             self.source_events["source_kappa"] = np.exp(
@@ -795,8 +795,8 @@ class ETASParameterCalculation:
             if self.free_productivity:
                 self.calc_a_k0_from_kappa()
 
-            self.logger.info('    new parameters:')
-            self.logger.info(
+            self.logger.debug('    new parameters:')
+            self.logger.debug(
                 pprint.pformat(
                     parameter_array2dict(
                         self.__theta),
@@ -835,7 +835,7 @@ class ETASParameterCalculation:
         if self.shape_coords is not None:
             self.shape_coords = read_shape_coords(self.shape_coords)
 
-            self.logger.info(
+            self.logger.debug(
                 '  Coordinates of region: {}'.format(list(self.shape_coords)))
 
             poly = Polygon(self.shape_coords)
@@ -1041,7 +1041,7 @@ class ETASParameterCalculation:
             - targets['mc_current'],
             mc=0,
             delta_m=self.delta_m)
-        logger.info('    beta is {}'.format(beta))
+        logger.debug('    beta is {}'.format(beta))
 
         # calculate some source stuff
         relevant['distance_range_squared'] = np.square(coppersmith(
