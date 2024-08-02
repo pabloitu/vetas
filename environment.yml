@@ -4,7 +4,7 @@ channels:
     - defaults
 dependencies:
     - Fiona==1.8.21
-    - gdal
+    - gdal==3.5.2
     - geopandas==0.11.0
     - munch==2.5.0
     - numpy==1.23.1
