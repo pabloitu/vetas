@@ -1,3 +1,9 @@
+## This code was modified from the original repository
+
+https://github.com/lmizrahi/etas
+
+for interfacing with the [floatCSEP](https://github.com/cseptesting/floatcsep) software
+
 # ETAS: Epidemic-Type Aftershock Sequence
 
 [![DOI](https://zenodo.org/badge/341629005.svg)](https://zenodo.org/badge/latestdoi/341629005)
