@@ -14,11 +14,11 @@ set_up_logger(level=logging.INFO)
 
 
 def run(config, continuation=True, forecast_duration=None,
-        n_sims=None, **kwargs):
+        n_sims=None, rates=False, **kwargs):
     config_dict, sim_fn, fd, ns = parse_args(config,
                                              forecast_duration,
                                              n_sims)
-
+    rates = rates or config_dict.get('rates', False)
     config_dict = get_prev_sim(config_dict, fd)
 
     # Invert parameters
@@ -34,8 +34,12 @@ def run(config, continuation=True, forecast_duration=None,
 
     # Simulate
     if continuation:
-        sim(parameters, output_fn=sim_fn,
-            forecast_duration=fd, n_sims=ns, **kwargs, fmt='csep')
+        if rates is False:
+            sim(parameters, output_fn=sim_fn, rates=False,
+                forecast_duration=fd, n_sims=ns, **kwargs, fmt='csep')
+        else:
+            sim(parameters, output_fn=sim_fn, rates=True,
+                forecast_duration=fd, n_sims=ns, **kwargs, fmt='csep')
     else:
         sim_time_inv(parameters)
 

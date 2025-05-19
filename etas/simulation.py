@@ -15,6 +15,7 @@ import logging
 import os
 import pprint
 
+import csep
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -684,6 +685,49 @@ class ETASSimulation:
 
                 simulations = pd.DataFrame()
         self.logger.info("DONE simulating!")
+
+    def simulate_to_dat(self, fn_store: str,
+                        n_simulations: int, forecast_n_days: int = None,
+                        m_threshold: float = None,
+                        chunksize: int = 100, info_cols: list = [],
+                        fmt: str = 'ch') -> None:
+
+        if fmt == 'csep':
+            info_cols = ['G', 'evt_id']
+            columns = ['longitude', 'latitude', 'magnitude',
+                       'time', 'G']
+            header = ['lon', 'lat', 'm', 'time', 'depth',
+                      'catalog_id', 'event_id']
+            if n_simulations != 1:
+                columns.append('catalog_id')
+            else:
+                columns.append('G')
+            columns.append('G')
+            date_format = '%Y-%m-%dT%H:%M:%S.%f'
+        else:
+            columns = None
+            header = True
+            date_format = None
+
+        generator = self.simulate(
+            forecast_n_days=forecast_n_days,
+            n_simulations=n_simulations,
+            m_threshold=m_threshold,
+            chunksize=chunksize,
+            info_cols=info_cols,
+        )
+        # create new file for first chunk
+        os.makedirs(os.path.abspath(os.path.dirname(fn_store)), exist_ok=True)
+        next(generator).to_csv(fn_store, mode='w', header=header, index=False,
+                               columns=columns, date_format=date_format)
+
+        # append rest of chunks to file
+        for chunk in generator:
+            chunk.to_csv(fn_store, mode='a', header=False, index=False,
+                         columns=columns, date_format=date_format)
+        catalog_forecast = csep.load_catalog_forecast(fn_store)
+        print(catalog_forecast.expected_rates.data)
+
 
     def simulate_to_csv(self, fn_store: str,
                         n_simulations: int, forecast_n_days: int = None,

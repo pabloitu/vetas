@@ -52,7 +52,7 @@ def sim_time_inv(config_fn):
     print("\nDONE!")
 
 
-def sim(parameter_fn, output_fn='simulation.csv',
+def sim(parameter_fn, output_fn='simulation.csv', rates=False,
         forecast_duration=365, n_sims=1, **kwargs):
     etas_inversion_reload = ETASParameterCalculation.load_calculation(
         parameter_fn)
@@ -60,7 +60,10 @@ def sim(parameter_fn, output_fn='simulation.csv',
     simulation = ETASSimulation(etas_inversion_reload)
     simulation.prepare()
 
-    simulation.simulate_to_csv(output_fn, n_sims, forecast_duration, **kwargs)
+    if rates:
+        simulation.simulate_to_dat(output_fn, n_sims, forecast_duration, **kwargs)
+    if rates is False:
+        simulation.simulate_to_csv(output_fn, n_sims, forecast_duration, **kwargs)
 
 
 def sim_catalog(config, seed=None, **kwargs):
