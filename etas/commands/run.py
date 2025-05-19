@@ -14,23 +14,27 @@ set_up_logger(level=logging.INFO)
 
 
 def run(config, continuation=True, forecast_duration=None,
-        n_sims=None, rates=False, **kwargs):
+        n_sims=None, rates=False, update=False, region='',**kwargs):
     config_dict, sim_fn, fd, ns = parse_args(config,
                                              forecast_duration,
                                              n_sims)
     rates = rates or config_dict.get('rates', False)
+    region = region or config_dict.get('region', False)
+    update = update or config_dict.get('update', False)
+
     config_dict = get_prev_sim(config_dict, fd)
 
     # Invert parameters
     calculation = ETASParameterCalculation(config_dict, **kwargs)
     calculation.prepare()
-    calculation.invert()
-    calculation.store_results()
 
-    # Store parameters
     subscript = ('_' + str(calculation.id)) * bool(calculation.id)
     parameters = os.path.join(calculation.data_path,
                               f'parameters{subscript}.json')
+
+    if update or (not os.path.exists(parameters)):
+        calculation.invert()
+        calculation.store_results()
 
     # Simulate
     if continuation:
@@ -38,7 +42,7 @@ def run(config, continuation=True, forecast_duration=None,
             sim(parameters, output_fn=sim_fn, rates=False,
                 forecast_duration=fd, n_sims=ns, **kwargs, fmt='csep')
         else:
-            sim(parameters, output_fn=sim_fn, rates=True,
+            sim(parameters, output_fn=sim_fn, rates=True, region=region,
                 forecast_duration=fd, n_sims=ns, **kwargs, fmt='csep')
     else:
         sim_time_inv(parameters)

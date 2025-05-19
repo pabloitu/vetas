@@ -19,6 +19,7 @@ import csep
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
 from scipy.special import gamma as gamma_func
 from scipy.special import gammainccinv
 from shapely.geometry import Polygon
@@ -595,6 +596,7 @@ class ETASSimulation:
                                  f"{len(self.catalog)} -- " \
                                  f"{len(self.source_events)}"
 
+        print(self.catalog.magnitude)
         np.testing.assert_allclose(self.catalog.magnitude.min(),
                                    self.inversion_params.m_ref,
                                    err_msg="smallest magnitude in sources is "
@@ -687,9 +689,12 @@ class ETASSimulation:
         self.logger.info("DONE simulating!")
 
     def simulate_to_dat(self, fn_store: str,
-                        n_simulations: int, forecast_n_days: int = None,
+                        n_simulations: int,
+                        region: str,
+                        forecast_n_days: int = None,
                         m_threshold: float = None,
                         chunksize: int = 100, info_cols: list = [],
+
                         fmt: str = 'ch') -> None:
 
         if fmt == 'csep':
@@ -725,8 +730,17 @@ class ETASSimulation:
         for chunk in generator:
             chunk.to_csv(fn_store, mode='a', header=False, index=False,
                          columns=columns, date_format=date_format)
-        catalog_forecast = csep.load_catalog_forecast(fn_store)
-        print(catalog_forecast.expected_rates.data)
+
+        try:
+            region = getattr(csep.core.regions, region)(magnitudes=np.arange(self.inversion_params.m_ref, 8.1, 0.1))
+        except:
+            region_origins = pd.read_csv(region).to_numpy()
+            region = csep.core.regions.CartesianGrid2D.from_origins(region_origins)
+
+        catalog_forecast = csep.load_catalog_forecast(fn_store, region=region, filter_spatial=True, apply_filters=True)
+        gridded_forecast = catalog_forecast.get_expected_rates()
+
+        write_dat(gridded_forecast, fn_store.replace('csv', 'dat'))
 
 
     def simulate_to_csv(self, fn_store: str,
@@ -778,3 +792,26 @@ class ETASSimulation:
             store = pd.concat([store, chunk], ignore_index=False)
 
         return store
+
+
+
+def write_dat(forecast, fn_store: str) -> None:
+
+    dm = np.diff(forecast.get_magnitudes())[0]
+    dh = forecast.region.dh
+
+    with open(fn_store, 'w') as f:
+        for x, y, rate in zip(forecast.get_longitudes(), forecast.get_latitudes(), forecast.data):
+            min_lon = x - dh / 2.
+            max_lon = x + dh / 2.
+            min_lat = y - dh / 2.
+            max_lat = y + dh / 2.
+            min_depth = 0
+            max_depth = 40
+            for m, r in zip(forecast.get_magnitudes(), rate):
+                min_mag = m - dm/2.
+                max_mag = m + dm/2.
+                f.write(
+        f'{min_lon:.2f}\t{max_lon:.2f}\t{min_lat:.2f}\t{max_lat:.2f}\t{min_depth:.2f}\t{max_depth:.2f}\t'
+        f'{min_mag:.2f}\t{max_mag:.2f}\t{r:.8e}\t1\n'
+                )
