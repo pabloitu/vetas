@@ -737,7 +737,8 @@ class ETASSimulation:
             region_origins = pd.read_csv(region).to_numpy()
             region = csep.core.regions.CartesianGrid2D.from_origins(region_origins)
 
-        catalog_forecast = csep.load_catalog_forecast(fn_store, region=region, filter_spatial=True, apply_filters=True)
+        catalog_forecast = csep.load_catalog_forecast(fn_store, region=region,
+                                                      n_cat=n_simulations, filter_spatial=True, apply_filters=True)
         gridded_forecast = catalog_forecast.get_expected_rates()
 
         write_dat(gridded_forecast, fn_store.replace('csv', 'dat'))
